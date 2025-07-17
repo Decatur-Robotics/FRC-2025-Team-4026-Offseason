@@ -6,7 +6,7 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 
 public class Elevator {
-    private TalonFX elevatorMotorMain, elevatorMotorFollower;
+ 
     private double position;
     private double voltage;
     private double velocity;
@@ -16,8 +16,9 @@ public class Elevator {
 
     public Elevator(ElevatorIO io){
         // this.io = io;
-        elevatorMotorMain = new TalonFX(0);
-        elevatorMotorFollower = new TalonFX(1);
+        
+
+        
     }
 
 }

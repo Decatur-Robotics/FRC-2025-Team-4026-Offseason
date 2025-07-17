@@ -13,7 +13,26 @@ package frc.robot;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
+
+
+
+  public enum RobotType {
+    COMPETITION,
+    OFFSEASON,
+    SIMULATION
+  }
+
+
+
+  private static RobotType robotType = RobotType.OFFSEASON;
+
+  public static RobotType getRobotType() {
+    return robotType;
+  }
+
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
   }
+
+
 }
