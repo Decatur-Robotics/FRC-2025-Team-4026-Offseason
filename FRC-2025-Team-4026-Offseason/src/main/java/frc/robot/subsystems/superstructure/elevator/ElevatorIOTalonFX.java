@@ -7,6 +7,8 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.units.measure.Angle;
@@ -18,16 +20,21 @@ import frc.robot.Constants;
 
 import frc.robot.Ports;
 import frc.robot.Constants.RobotType;
+import frc.robot.subsystems.superstructure.elevator.ElevatorIO.ElevatorIOInputs;
 
 public class ElevatorIOTalonFX {
     private TalonFX mainMotor, followerMotor;
 
     private TalonFXConfiguration config = new TalonFXConfiguration();
 
+    private VoltageOut voltageRequest;
+      private final PositionTorqueCurrentFOC positionTorqueCurrentRequest;
+
     private final StatusSignal<Angle> position;
     private final StatusSignal<Voltage> voltage;
     private final StatusSignal<AngularVelocity> velocity;
     private final StatusSignal<Current> supplyAmps;
+    private final StatusSignal<Current> torqueCurrent;
     
     
 
@@ -49,9 +56,54 @@ public class ElevatorIOTalonFX {
         voltage = mainMotor.getMotorVoltage();
         velocity = mainMotor.getVelocity();
         supplyAmps = mainMotor.getSupplyCurrent();
+        torqueCurrent = mainMotor.getTorqueCurrent();
+
+        positionTorqueCurrentRequest = new PositionTorqueCurrentFOC(0.0).withUpdateFreqHz(0.0);
 
         BaseStatusSignal.setUpdateFrequencyForAll(20, position, voltage, velocity, supplyAmps);
 
+    }
+
+    public void updateInputs(ElevatorIOInputs inputs) {
+      inputs.data = new ElevatorIO.ElevatorIOData(
+            mainMotor.isConnected(),
+            followerMotor.isConnected(),
+            position.getValueAsDouble(),
+            voltage.getValueAsDouble(),
+            velocity.getValueAsDouble(),
+            supplyAmps.getValueAsDouble(),
+            torqueCurrent.getValueAsDouble()
+        );
+          
         
     }
+    
+    //IDK if this goes here or in the subsystem
+    public void setVoltage(double voltage) {
+        mainMotor.setControl(voltageRequest.withOutput(voltage));
+    }
+
+    public void stop() {
+        mainMotor.stopMotor();
+    }
+
+    public void runPosition(double position, double feedForward) {
+        mainMotor.setControl(positionTorqueCurrentRequest.withPosition(position)
+            .withPosition(0.0)
+            .withFeedForward(0.0));
+    }
+
+    public void setPID(ElevatorConstants constants){
+        config.Slot0.kP = constants.kP;
+        config.Slot0.kI = constants.kI;
+        config.Slot0.kD = constants.kD;
+        config.Slot0.kS = constants.kS;
+        config.Slot0.kV = constants.kV;
+        config.Slot0.kA = constants.kA;
+        config.Slot0.kG = constants.kG;
+        // mainMotor.setConfig()
+    }
+
+    
+
 }
