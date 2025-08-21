@@ -11,11 +11,14 @@ public class Elevator {
     private double voltage;
     private double velocity;
 
+    private ElevatorIO io;
+
     private MotionMagicVoltage positionRequest;
     private VelocityVoltage velocityRequest;
 
     public Elevator(ElevatorIO io){
-        //this.io = io;
+        this.io = io;
+        
         
 
         
