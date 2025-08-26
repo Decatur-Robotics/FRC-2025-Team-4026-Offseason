@@ -23,7 +23,7 @@ import frc.robot.Constants.RobotType;
 import frc.robot.subsystems.superstructure.elevator.ElevatorIO.ElevatorIOInputs;
 
 public class ElevatorIOTalonFX {
-    private TalonFX mainMotor, followerMotor;
+    public TalonFX mainMotor, followerMotor;
 
     private TalonFXConfiguration config = new TalonFXConfiguration();
 
@@ -62,6 +62,16 @@ public class ElevatorIOTalonFX {
 
         BaseStatusSignal.setUpdateFrequencyForAll(20, position, voltage, velocity, supplyAmps);
 
+    }
+
+    //@Override
+    public void periodic(){
+        if (mainMotor.hasResetOccurred()|| followerMotor.hasResetOccurred()){
+            mainMotor.optimizeBusUtilization();
+            followerMotor.optimizeBusUtilization();
+            mainMotor.getPosition().setUpdateFrequency(40);
+        }
+        
     }
 
     public void updateInputs(ElevatorIOInputs inputs) {
