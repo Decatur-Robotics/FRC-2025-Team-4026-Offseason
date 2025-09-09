@@ -1,5 +1,86 @@
 package frc.robot.subsystems.superstructure.elevator;
 
-public class ElevatorIOSim {
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Voltage;
+
+import com.ctre.phoenix6.controls.TorqueCurrentFOC;
+
+
+import edu.wpi.first.math.MatBuilder;
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.Nat;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.Vector;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.numbers.N2;
+
+public class ElevatorIOSim implements ElevatorIO {
+    public static final Double carrageMassKG = Units.lbsToKilograms(20);
+    public static final Double stageMassKG = Units.lbsToKilograms(5.8);
+    public static final DCMotor gearbox = DCMotor.getFalcon500Foc(2).withReduction(0);
+
+    public static final Matrix<N2, N2> A = 
+    MatBuilder.fill(Nat.N2(), Nat.N2(), 0, 1, 0, -gearbox.KtNMPerAmp/(gearbox.rOhms*Math.pow(0, 0)));
+    public static final Vector<N2> B = VecBuilder.fill(0.0, gearbox.KtNMPerAmp/(carrageMassKG*stageMassKG));
+    private Vector<N2> simState;
+    private double inputTorqueCurrent;
+    private double appliedVoltage;
+
+    private final PIDController controller = new PIDController(0.0, 0.0, 0.0);
+    private boolean closedLoop = false;
+    private double feedForward = 0;
+
+    public ElevatorIOSim() {
+        simState = VecBuilder.fill(0.0, 0.0);
+    }
+
+    @Override
+    public void updateInputs(ElevatorIOInputs inputs) {
+        if(!closedLoop){
+            controller.reset();
+            
+        }
+        else{
+            
+            inputTorqueCurrent = controller.calculate(simState.get(0, 0), 0.0) + feedForward;
+            // update(1/1000);
+        }
+        inputs.data = new ElevatorIOData(
+        true,
+        true,
+        simState.get(0),
+        simState.get(1),
+        appliedVoltage,
+        Math.copySign(inputTorqueCurrent, appliedVoltage),
+        Math.copySign(inputTorqueCurrent, appliedVoltage),
+        0.0,
+        0.0,
+        0.0,
+        0.0
+    );
+    }
+
+     @Override
+     public void runOpenLoop(double output) {
+        setInputTorqueCurrent(output);
+        closedLoop = false;
+    
+    }
+
+    @Override
+    public void runVolts(double volts) {
+        appliedVoltage = volts;
+        closedLoop = false;
+    }
+
+    public void setInputTorqueCurrent(double torqueCurrent) {
+        this.inputTorqueCurrent = torqueCurrent;
+        appliedVoltage = gearbox.getVoltage(gearbox.getTorque(inputTorqueCurrent), simState.get(1, 0));
+    }
+
     
 }
+    
+
+

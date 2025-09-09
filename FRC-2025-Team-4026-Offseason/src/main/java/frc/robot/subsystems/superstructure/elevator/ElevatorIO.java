@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ser.std.StdKeySerializers.Default;
 public interface ElevatorIO {
 
     class ElevatorIOInputs{
-        public ElevatorIOData data = new ElevatorIOData(false, false, 0.0, 0.0, 0.0, 0.0 , 0.0);
+        public ElevatorIOData data = new ElevatorIOData(false, false, 0.0, 0.0, 0.0, 0.0 , 0.0, 0.0, 0.0,0.0,0.0);
     }
     
     record ElevatorIOData(
@@ -15,12 +15,16 @@ public interface ElevatorIO {
         Double position,
         Double voltage,
         Double velocity,
-        double supplyAmps,
-        double torqueCurrent
-    ){
+        Double supplyAmps,
+        Double torqueCurrent,
+        Double followerVoltage,
+        Double followerVelocity,
+        Double followerSupplyAmps,
+        Double followerTorqueCurrent
+    ){}
 
        
-    } 
+    
       
     default void updateInputs(ElevatorIOInputs inputs) {
     }

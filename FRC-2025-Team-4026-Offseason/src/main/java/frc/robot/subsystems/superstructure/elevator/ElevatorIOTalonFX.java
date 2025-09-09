@@ -35,7 +35,11 @@ public class ElevatorIOTalonFX {
     private final StatusSignal<AngularVelocity> velocity;
     private final StatusSignal<Current> supplyAmps;
     private final StatusSignal<Current> torqueCurrent;
-    
+    private final StatusSignal<Voltage> followerVoltage;
+    private final StatusSignal<AngularVelocity> followerVelocity;
+    private final StatusSignal<Current> followerSupplyAmps;
+    private final StatusSignal<Current> followerTorqueCurrent;
+
     
 
 
@@ -57,10 +61,14 @@ public class ElevatorIOTalonFX {
         velocity = mainMotor.getVelocity();
         supplyAmps = mainMotor.getSupplyCurrent();
         torqueCurrent = mainMotor.getTorqueCurrent();
+        followerVoltage = followerMotor.getMotorVoltage();
+        followerVelocity = followerMotor.getVelocity();
+        followerSupplyAmps = followerMotor.getSupplyCurrent();
+        followerTorqueCurrent = followerMotor.getTorqueCurrent();
 
         positionTorqueCurrentRequest = new PositionTorqueCurrentFOC(0.0).withUpdateFreqHz(0.0);
 
-        BaseStatusSignal.setUpdateFrequencyForAll(20, position, voltage, velocity, supplyAmps);
+        BaseStatusSignal.setUpdateFrequencyForAll(20, position, voltage, velocity, supplyAmps, torqueCurrent, followerVoltage, followerVelocity, followerSupplyAmps, followerTorqueCurrent);
 
     }
 
@@ -82,7 +90,11 @@ public class ElevatorIOTalonFX {
             voltage.getValueAsDouble(),
             velocity.getValueAsDouble(),
             supplyAmps.getValueAsDouble(),
-            torqueCurrent.getValueAsDouble()
+            torqueCurrent.getValueAsDouble(),
+            followerVoltage.getValueAsDouble(),
+            followerVelocity.getValueAsDouble(),
+            followerSupplyAmps.getValueAsDouble(),
+            followerTorqueCurrent.getValueAsDouble()
         );
           
         
