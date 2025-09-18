@@ -24,7 +24,7 @@ public class Climber {
         this.io = io;
         position = ClimberConstants.STOWED_POSITION;
     }
-
+    
     public void periodic(){
         io.updateInputs(null);
         Logger.processInputs(null, null);

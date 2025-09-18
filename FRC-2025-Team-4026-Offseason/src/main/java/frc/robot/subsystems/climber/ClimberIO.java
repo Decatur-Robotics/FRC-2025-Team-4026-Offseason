@@ -36,7 +36,7 @@ public interface ClimberIO {
     default void runPosition(double position, double feedforward) {
     }
 
-    default void setPID(ElevatorConstants constants){
+    default void setPID(ClimberConstants constants){
 
     }
 
