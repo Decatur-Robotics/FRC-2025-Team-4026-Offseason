@@ -72,7 +72,6 @@ public class ElevatorIOTalonFX {
 
     }
 
-    //@Override
     public void periodic(){
         if (mainMotor.hasResetOccurred()|| followerMotor.hasResetOccurred()){
             mainMotor.optimizeBusUtilization();

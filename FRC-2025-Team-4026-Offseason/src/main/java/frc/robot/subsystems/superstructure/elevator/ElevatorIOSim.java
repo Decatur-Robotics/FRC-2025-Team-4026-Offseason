@@ -1,5 +1,6 @@
 package frc.robot.subsystems.superstructure.elevator;
 
+import edu.wpi.first.math.system.NumericalIntegration;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Voltage;
@@ -8,11 +9,13 @@ import com.ctre.phoenix6.controls.TorqueCurrentFOC;
 
 
 import edu.wpi.first.math.MatBuilder;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N2;
 
 public class ElevatorIOSim implements ElevatorIO {
@@ -61,25 +64,57 @@ public class ElevatorIOSim implements ElevatorIO {
     );
     }
 
-     @Override
-     public void runOpenLoop(double output) {
+
+    public void runOpenLoop(double output) {
         setInputTorqueCurrent(output);
         closedLoop = false;
     
     }
 
-    @Override
     public void runVolts(double volts) {
         appliedVoltage = volts;
         closedLoop = false;
     }
 
+    public void stop(){
+        runOpenLoop(0);
+    }
+
+    public void runPosition(double position, double feedForward) {
+        controller.setSetpoint(position);
+        this.feedForward = feedForward;
+        closedLoop = true;
+    }
+
+    public void setPID(double kP, double kI, double kD) {
+        controller.setPID(kP, kI, kD);
+        
+    }
+
+
     public void setInputTorqueCurrent(double torqueCurrent) {
         this.inputTorqueCurrent = torqueCurrent;
         appliedVoltage = gearbox.getVoltage(gearbox.getTorque(inputTorqueCurrent), simState.get(1, 0));
     }
-
     
+    public void setInputVoltage(double voltage) {
+        setInputTorqueCurrent(gearbox.getCurrent(simState.get(1, 0), voltage));
+    }
+
+    public void update(double dt) {
+        inputTorqueCurrent = MathUtil.clamp(inputTorqueCurrent, -gearbox.stallCurrentAmps, gearbox.stallCurrentAmps);
+        Matrix<N2, N1> updatedState = NumericalIntegration.rkdp((Matrix<N2, N1> x, Matrix<N1, N1> u) -> A.times(x).plus(B.times(u).plus(VecBuilder.fill(0, 0))), simState, MatBuilder.fill(Nat.N1(), Nat.N1(), inputTorqueCurrent), dt);
+        simState = VecBuilder.fill(updatedState.get(0, 0), updatedState.get(1, 0));
+        if(simState.get(0)<=0){
+            simState.set(1, 0, 0);
+            simState.set(0, 0, 0);
+        }
+        if (simState.get(0)>= 0.762){
+            simState.set(1, 0, 0);
+            simState.set(0, 0, 0.762);{
+            
+        }
+    }}
 }
     
 
