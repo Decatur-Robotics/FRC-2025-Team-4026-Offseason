@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.RobotBase;
+
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
  * constants. This class should not be used for any other purpose. All constants should be declared
@@ -14,22 +16,33 @@ package frc.robot;
  */
 public final class Constants {
 
+  public static final Mode SIM_MODE = Mode.SIM;
+  public static final Mode CURRENT_MODE = RobotBase.isReal() ? Mode.REAL : SIM_MODE;
 
+  public enum Mode {
+    REAL,
+    SIM,
+    REPLAY
+  }
 
-  public enum RobotType {
+  public enum RobotType{
     COMPETITION,
     OFFSEASON,
     SIMULATION
   }
 
+  public static RobotType robotType = RobotType.OFFSEASON;
 
-
-  private static RobotType robotType = RobotType.OFFSEASON;
-
-  public static RobotType getRobotType() {
+  public static RobotType getRobotType(){
     return robotType;
   }
 
+  // public static Mode getMode(){
+  //   return switch (robotType){
+  //     case OFFSEASON, COMPETITION -> RobotBase.isReal() ? Mode.REAL : Mode.REPLAY:
+  //     case SIMULATION -> Mode.SIM;
+  //   };
+  // }
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
   }
