@@ -14,7 +14,7 @@ public class Climber {
     private double position;
     private double voltage;
     private double velocity;
-
+    private final ClimberIOInputsAutoLogged inputs = new ClimberIOInputsAutoLogged();
     private ClimberIO io;
 
     private MotionMagicVoltage positionRequest;
