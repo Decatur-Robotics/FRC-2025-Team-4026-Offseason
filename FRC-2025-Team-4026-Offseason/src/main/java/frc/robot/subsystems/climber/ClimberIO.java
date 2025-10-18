@@ -1,12 +1,14 @@
 package frc.robot.subsystems.climber;
 
+import org.littletonrobotics.junction.AutoLog;
+
 import frc.robot.subsystems.superstructure.elevator.ElevatorConstants;
 
 public interface ClimberIO {
 
     
 
-
+    @AutoLog
     class ClimberIOInputs {//apparently the 6 values are intial values for some logging data
         public ClimberIOData data = new ClimberIOData(false, 0.0, 0.0, 0.0, 0.0, 0.0);
     }

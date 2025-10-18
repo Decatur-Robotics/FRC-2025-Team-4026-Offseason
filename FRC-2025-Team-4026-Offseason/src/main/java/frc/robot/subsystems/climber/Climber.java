@@ -5,15 +5,18 @@ import org.littletonrobotics.junction.Logger;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 
+import org.littletonrobotics.junction.AutoLogOutput;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.subsystems.superstructure.elevator.Elevator;
-import frc.robot.subsystems.superstructure.elevator.ElevatorIOTalonFX;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class Climber {
+import org.littletonrobotics.junction.Logger;
+
+public class Climber extends SubsystemBase{
     private double position;
     private double voltage;
     private double velocity;
+    
     private final ClimberIOInputsAutoLogged inputs = new ClimberIOInputsAutoLogged();
     private ClimberIO io;
 
