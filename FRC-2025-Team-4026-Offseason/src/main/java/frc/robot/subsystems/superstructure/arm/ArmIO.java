@@ -1,5 +1,16 @@
 package frc.robot.subsystems.superstructure.arm;
 
-public class ArmIO {
+public interface ArmIO {
+    class ArmIOInputs{
+        public ArmIOData data = new ArmIOData(false,0.0,0.0,0.0,0.0,0.0);
+    }
+    record ArmIOData(
+    boolean motorConnected,
+    double voltage,
+    double position,
+    double velocity,
+    double supplyAmps,
+    double torqueCurrent
+    ){};
     
-}
+} 
