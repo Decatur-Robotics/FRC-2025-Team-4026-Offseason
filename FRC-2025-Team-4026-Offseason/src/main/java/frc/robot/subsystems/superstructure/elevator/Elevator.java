@@ -72,7 +72,7 @@ public class Elevator extends SubsystemBase {
     }
 
     public double getPosition(ElevatorIOTalonFX mainMotor){
-        return position;
+        return inputs.data.position();
     }
 
     

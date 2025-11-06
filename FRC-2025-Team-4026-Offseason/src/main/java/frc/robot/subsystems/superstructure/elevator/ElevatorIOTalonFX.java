@@ -28,7 +28,7 @@ public class ElevatorIOTalonFX {
     private TalonFXConfiguration config = new TalonFXConfiguration();
 
     private VoltageOut voltageRequest;
-      private final PositionTorqueCurrentFOC positionTorqueCurrentRequest;
+    private final PositionTorqueCurrentFOC positionTorqueCurrentRequest;
 
     private final StatusSignal<Angle> position;
     private final StatusSignal<Voltage> voltage;
