@@ -3,6 +3,7 @@ package frc.robot.subsystems.superstructure.arm;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Ports;
 import frc.robot.subsystems.superstructure.elevator.ElevatorIOInputsAutoLogged;
 import frc.robot.subsystems.superstructure.elevator.ElevatorIOTalonFX;
 
@@ -10,12 +11,15 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.hardware.CANcoder;
 public class Arm extends SubsystemBase{
     private double position;
     private double voltage;
     private double velocity;
 
     private final ArmIOInputsAutoLogged inputs = new ArmIOInputsAutoLogged();
+
+    private CANcoder throughBoreEncoder;
 
     private MotionMagicVoltage positionRequest;
     private ArmIO io;
@@ -24,11 +28,13 @@ public class Arm extends SubsystemBase{
     public Arm (ArmIO io){
         this.io = io;
         position = ArmConstants.STOWED_POSITION;
+        throughBoreEncoder = new CANcoder(Ports.ARM_ENCODER);
+        throughBoreEncoder.getConfigurator().apply(ArmConstants.ENCODER_CONFIG);
     }
 
     public void periodic(){
-        io.updateInputs(null);
-        Logger.processInputs(null, null);
+        io.updateInputs(inputs);
+        Logger.processInputs("Arm Inputs", inputs);
 
         if(isEstopped){
             io.stop();
@@ -40,7 +46,7 @@ public class Arm extends SubsystemBase{
     }
 
     public double getPosition(ArmIOTalonFX motor){
-        return inputs.data.position();
+        return throughBoreEncoder.getPosition().getValueAsDouble();
     }
 
     public Command zeroCommand(ArmIOTalonFX motor){
