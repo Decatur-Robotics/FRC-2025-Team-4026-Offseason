@@ -54,8 +54,10 @@ public class ArmIOTalonFX {
         BaseStatusSignal.setUpdateFrequencyForAll(20,position,voltage,velocity,supplyAmps,torqueCurrent);
     }
     public void periodic(){
-            motor.optimizeBusUtilization();
-            motor.getPosition().setUpdateFrequency(40);
+            if(motor.hasResetOccurred()){
+                motor.optimizeBusUtilization();
+                motor.getPosition().setUpdateFrequency(40); 
+            }
         }
         
 
