@@ -6,6 +6,7 @@ import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.system.NumericalIntegration;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -34,10 +35,7 @@ public class IntakeIOSim implements IntakeIO {
         if (!closedLoop) {
             controller.reset();
         }
-
-    }
-
-    inputs.intakeData = new IntakeIOData(
+        inputs.intakeData = new IntakeIOData(
         true,
         true,
         0.0,
@@ -45,6 +43,10 @@ public class IntakeIOSim implements IntakeIO {
         0.0,
         simState.get(1)
     );
+
+    }
+
+    
 
     public void runOpenLoop(double output){
         closedLoop = false;
@@ -58,16 +60,16 @@ public class IntakeIOSim implements IntakeIO {
         controller.setPID(kP,kI,kD);
     }
     
-    public void update(double dt) {
-        Matrix<N2, N1> updatedState = NumericalIntegration.rkdp((Matrix<N1,N1> x, Matrix<N2,N1> u) -> simMatrix.times(x).plus(B.times(u).plus(VecBuilder.fill(0,0))), simState, MatBuilder.fill(Nat.N1(),Nat.N1()), dt);
-        simState = VecBuilder.fill(updatedState.get(0,0), updatedState.get(1,0));
-        if simState.get(0) <=0 {
-            simState.set(1,0,0);
-            simState.set(0,0,0);
-        }
-        if (simState.get(0) >=0.762) {
-            simState.set(1,0,0);
-            simState.set(0,0,0.762);
-        }
-    }
+    // public void update(double dt) {
+    //     Matrix<N2, N1> updatedState = NumericalIntegration.rkdp((Matrix<N1,N1> x, Matrix<N2,N1> u) -> simMatrix.times(x).plus(B.times(u).plus(VecBuilder.fill(0,0))), simState, MatBuilder.fill(Nat.N1(),Nat.N1()), dt);
+    //     simState = VecBuilder.fill(updatedState.get(0,0), updatedState.get(1,0));
+    //     if (simState.get(0) <=0) {
+    //         simState.set(1,0,0);
+    //         simState.set(0,0,0);
+    //     }
+    //     if (simState.get(0) >=0.762) {
+    //         simState.set(1,0,0);
+    //         simState.set(0,0,0.762);
+    //     }
+    // }
 }
