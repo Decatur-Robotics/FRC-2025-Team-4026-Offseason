@@ -16,6 +16,7 @@ public class Climber extends SubsystemBase{
     private double position;
     private double voltage;
     private double velocity;
+    private final String inputsName;
     
     private final ClimberIOInputsAutoLogged inputs = new ClimberIOInputsAutoLogged();
     private ClimberIO io;
@@ -24,13 +25,14 @@ public class Climber extends SubsystemBase{
     private VelocityVoltage velocityRequest;
 
     public Climber(ClimberIO io) {
+        this.inputsName= this.getClass().getSimpleName() + "Inputs";
         this.io = io;
         position = ClimberConstants.STOWED_POSITION;
     }
     
     public void periodic(){
-        io.updateInputs(null);
-        Logger.processInputs(null, null);
+        io.updateInputs(inputs);
+        Logger.processInputs(inputsName, inputs);
 
     }
 
