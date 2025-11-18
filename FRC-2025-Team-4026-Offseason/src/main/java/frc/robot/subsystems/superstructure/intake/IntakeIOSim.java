@@ -1,5 +1,7 @@
 package frc.robot.subsystems.superstructure.intake;
 
+import com.ctre.phoenix6.controls.VoltageOut;
+
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
@@ -12,6 +14,7 @@ import edu.wpi.first.math.system.NumericalIntegration;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import frc.robot.subsystems.superstructure.elevator.Elevator;
+
 
 public class IntakeIOSim implements IntakeIO {
     public static final Double armMassKG = Units.lbsToKilograms(0.42);
@@ -46,7 +49,7 @@ public class IntakeIOSim implements IntakeIO {
 
     }
 
-    
+
 
     public void runOpenLoop(double output){
         closedLoop = false;

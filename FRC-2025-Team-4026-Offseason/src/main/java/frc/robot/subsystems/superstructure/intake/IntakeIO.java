@@ -23,6 +23,9 @@ public interface IntakeIO {
     default void setVoltage(double voltage) {
     
     }
+    default void runOpenLoop(double output){
+        
+    }
     default void stop(){}
     
     default void setPID(IntakeConstants constants){

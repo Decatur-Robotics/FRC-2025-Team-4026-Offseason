@@ -48,7 +48,7 @@ public class IntakeIOTalonFX {
         voltageLeft = motorLeft.getMotorVoltage();
         velocityLeft = motorLeft.getVelocity();
         
-        BaseStatusSignal.setUpdateFrequencyForAll(20, voltageRight, velocityRight, voltageLeft, velocityLeft);
+        BaseStatusSignal.setUpdateFrequencyForAll(40, voltageRight, velocityRight, voltageLeft, velocityLeft);
 
     }
 
