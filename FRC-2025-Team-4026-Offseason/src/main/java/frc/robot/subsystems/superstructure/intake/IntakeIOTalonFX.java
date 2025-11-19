@@ -15,6 +15,7 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VoltageOut;
 
@@ -35,6 +36,8 @@ public class IntakeIOTalonFX {
     public IntakeIOTalonFX(){
         motorRight = new TalonFX(Constants.getRobotType() == RobotType.COMPETITION ? Ports.INTAKE_MOTOR_RIGHT : Ports.INTAKE_MOTOR_RIGHT);
         motorLeft = new TalonFX(Constants.getRobotType() == RobotType.COMPETITION ? Ports.INTAKE_MOTOR_LEFT : Ports.INTAKE_MOTOR_LEFT);
+
+        motorLeft.setControl(new Follower(Ports.INTAKE_MOTOR_RIGHT, true));
 
         config.Slot0 = new Slot0Configs()
             .withKP(IntakeConstants.kP)

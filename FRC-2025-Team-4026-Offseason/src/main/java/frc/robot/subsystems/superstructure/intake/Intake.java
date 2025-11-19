@@ -13,6 +13,7 @@ import frc.robot.Constants;
 public class Intake extends SubsystemBase {
     private double voltage;
     private double velocity;
+    private IntakeIOTalonFX motorLeft;
 
     private final String inputsName;
     private boolean isEStopped = false;
@@ -48,15 +49,14 @@ public class Intake extends SubsystemBase {
         
     }
 
-    public void setVelocity(IntakeIOTalonFX motorRight, IntakeIOTalonFX motorLeft, double velocity){
+    public void setVelocity(double velocity){
         this.velocity = velocity;
         velocityRequest = new VelocityVoltage(velocity);
-        motorRight.motorRight.setControl(velocityRequest);
         motorLeft.motorLeft.setControl(velocityRequest);
     }
 
     public Command setVelocityCommand(double velocity){
-        return Commands.runOnce(() -> setVelocity(null, null, velocity));
+        return Commands.runOnce(() -> setVelocity(velocity));
     }
 
     public double getVelocity(){
