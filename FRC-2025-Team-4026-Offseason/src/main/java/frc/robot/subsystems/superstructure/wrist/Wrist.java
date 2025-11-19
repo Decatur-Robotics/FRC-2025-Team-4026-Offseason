@@ -17,6 +17,7 @@ public class Wrist extends SubsystemBase{
     private final TorqueCurrentFOC TorqueCurrentOut = new TorqueCurrentFOC(WristConstants.PERPENDICULAR_CURRENT);
     private final VoltageOut VoltageOut = new VoltageOut(0.0);
     private final NeutralOut neutralOut = new NeutralOut();
+    private WristIOTalonFX wristMotor;
 
 
     
@@ -58,20 +59,23 @@ public class Wrist extends SubsystemBase{
     }
     
     
-    public void setCurrent(double current, WristIOTalonFX wristMotor){
+    public void setCurrent(double current){
         wristMotor.wristMotor.setControl(TorqueCurrentOut.withOutput(current));
     }
     
-    public void setVolts(double volts, WristIOTalonFX wristMotor){
+    public void setVolts(double volts){
         wristMotor.wristMotor.setControl(VoltageOut.withOutput(volts));
     }
 
+    public double getCurrent() {
+        return inputs.data.torqueCurrentAmps();
+    }
     
     public void stop(WristIOTalonFX wristMotor) {
         wristMotor.wristMotor.setControl(neutralOut);
     }
     
-
+    
     
     
 }
