@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj.RobotBase;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-  
+
   public static final Mode SIM_MODE = Mode.SIM;
   public static final Mode CURRENT_MODE = RobotBase.isReal() ? Mode.REAL : SIM_MODE;
 
@@ -36,7 +36,16 @@ public final class Constants {
   public static RobotType getRobotType(){
     return robotType;
   }
+
+  // public static Mode getMode(){
+  //   return switch (robotType){
+  //     case OFFSEASON, COMPETITION -> RobotBase.isReal() ? Mode.REAL : Mode.REPLAY:
+  //     case SIMULATION -> Mode.SIM;
+  //   };
+  // }
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
   }
+
+
 }
