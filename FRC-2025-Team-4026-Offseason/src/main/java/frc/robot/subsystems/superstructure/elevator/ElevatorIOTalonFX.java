@@ -22,7 +22,7 @@ import frc.robot.Ports;
 import frc.robot.Constants.RobotType;
 import frc.robot.subsystems.superstructure.elevator.ElevatorIO.ElevatorIOInputs;
 
-public class ElevatorIOTalonFX {
+public class ElevatorIOTalonFX implements ElevatorIO {
     public TalonFX mainMotor, followerMotor;
 
     private TalonFXConfiguration config = new TalonFXConfiguration();
@@ -81,6 +81,7 @@ public class ElevatorIOTalonFX {
         
     }
 
+    @Override
     public void updateInputs(ElevatorIOInputs inputs) {
       inputs.data = new ElevatorIO.ElevatorIOData(
             mainMotor.isConnected(),
@@ -104,16 +105,19 @@ public class ElevatorIOTalonFX {
         mainMotor.setControl(voltageRequest.withOutput(voltage));
     }
 
+    @Override
     public void stop() {
         mainMotor.stopMotor();
     }
 
+    @Override
     public void runPosition(double position, double feedForward) {
         mainMotor.setControl(positionTorqueCurrentRequest.withPosition(position)
             .withPosition(0.0)
             .withFeedForward(0.0));
     }
 
+    @Override
     public void setPID(ElevatorConstants constants){
         config.Slot0.kP = constants.kP;
         config.Slot0.kI = constants.kI;
