@@ -151,7 +151,7 @@ public class Superstructure {
                 (Math.abs(intake.getFilteredCurrentLeft()) > IntakeConstants.CORAL_STALL_CURRENT)
                 || (Math.abs(intake.getFilteredCurrentRight()) > IntakeConstants.CORAL_STALL_CURRENT))
                 && !Robot.isSimulation()) 
-                || Robot.isSimulation() && RobotContainer.getInstance().getSwerve().isAligned())),
+                || Robot.isSimulation() && true)),
             Commands.runOnce(() -> led.flashAllPixels(LEDConstants.BLUE, 5), led),
             Commands.waitSeconds(0.1)
         )
@@ -226,6 +226,26 @@ Commands.waitUntil(() -> isAtTargetState())
 setState(stowedState);
 });
 }
+
+public Command scoreEjectCommand(SuperstructureState stagingState, SuperstructureState ejectingState, 
+            SuperstructureState stowedState, 
+            Supplier<Boolean> isNearTargetPose, Supplier<Boolean> isAtTargetPose, 
+            Supplier<Boolean> overrideNearPose, Supplier<Boolean> overrideAtPose) {
+        return Commands.sequence(
+            Commands.waitUntil(() -> (isNearTargetPose.get() || overrideNearPose.get())),
+            Commands.runOnce(() -> setState(stagingState),
+                elevator, arm, wrist, intake),
+            Commands.waitUntil(() -> (isAtTargetState() && isAtTargetPose.get()) || overrideAtPose.get()),
+            Commands.run(() -> {
+                setState(ejectingState);
+                led.flashAllPixels(LEDConstants.YELLOW, 5);
+            },
+                elevator, arm, wrist, intake, led)
+        )
+        .finallyDo(() -> {
+            setState(stowedState);
+        });
+    }
 
 public Command dealgifyLowCommand() {
     return dealgifyCommand(SuperstructureConstants.LOW_DEALGIFY_STATE,
