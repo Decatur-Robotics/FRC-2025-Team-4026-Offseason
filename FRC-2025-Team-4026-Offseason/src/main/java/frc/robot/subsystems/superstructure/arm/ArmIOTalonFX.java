@@ -20,7 +20,7 @@ import frc.robot.subsystems.superstructure.elevator.ElevatorIO;
 import frc.robot.subsystems.superstructure.elevator.ElevatorIO.ElevatorIOInputs;
 
 
-public class ArmIOTalonFX {
+public class ArmIOTalonFX implements ArmIO{
     public TalonFX motor; 
     public TalonFXConfiguration config = new TalonFXConfiguration();
 
