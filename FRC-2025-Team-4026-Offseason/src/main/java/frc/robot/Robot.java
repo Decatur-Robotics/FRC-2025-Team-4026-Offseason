@@ -120,4 +120,8 @@ if (isReal()) {
   /** This function is called periodically whilst in simulation. */
   @Override
   public void simulationPeriodic() {}
+
+  public static boolean isInSimulation() {
+    return !Robot.isReal();
+  }
 }

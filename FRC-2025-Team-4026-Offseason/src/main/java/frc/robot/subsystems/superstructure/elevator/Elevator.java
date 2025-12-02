@@ -85,7 +85,7 @@ public class Elevator extends SubsystemBase {
         return Commands.runOnce(() -> setPosition(position));
     }
 
-    public double getPosition(ElevatorIOTalonFX mainMotor){
+    public double getPosition(){
         return mainMotor.mainMotor.getPosition().getValueAsDouble();
     }
 

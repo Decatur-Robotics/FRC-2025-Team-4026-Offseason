@@ -16,7 +16,7 @@ public class Arm extends SubsystemBase{
     private double position;
     private double voltage;
     private double velocity;
-
+    private ArmIOTalonFX motor;
     private final ArmIOInputsAutoLogged inputs = new ArmIOInputsAutoLogged();
 
     private CANcoder throughBoreEncoder;
@@ -41,11 +41,13 @@ public class Arm extends SubsystemBase{
         }
     }
 
-    public void setPosition(ArmIOTalonFX motor){
+    public void setPosition(double position){
         motor.motor.setControl(positionRequest.withPosition(position));
     }
 
-    public double getPosition(ArmIOTalonFX motor){
+    
+
+    public double getPosition(){
         return throughBoreEncoder.getPosition().getValueAsDouble();
     }
 
