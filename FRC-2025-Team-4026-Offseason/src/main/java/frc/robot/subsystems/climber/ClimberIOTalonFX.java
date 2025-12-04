@@ -17,7 +17,7 @@ import frc.robot.Constants.RobotType;
 import frc.robot.Ports;
 import frc.robot.subsystems.climber.ClimberIO.ClimberIOInputs;
 
-public class ClimberIOTalonFX {
+public class ClimberIOTalonFX implements ClimberIO{
     public TalonFX climbMotor;
 
     private TalonFXConfiguration config = new TalonFXConfiguration();

@@ -19,7 +19,7 @@ import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VoltageOut;
 
-public class IntakeIOTalonFX {
+public class IntakeIOTalonFX implements IntakeIO{
     public TalonFX motorLeft, motorRight;
 
     private TalonFXConfiguration config = new TalonFXConfiguration();
