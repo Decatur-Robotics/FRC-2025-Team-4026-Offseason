@@ -25,7 +25,6 @@ public class Intake extends SubsystemBase {
     private LinearFilter currentFilterRight;
     private double filteredCurrentRight;
 
-    private VelocityVoltage velocityRequest;
 
     static{
         switch(Constants.getRobotType()){
@@ -53,28 +52,28 @@ public class Intake extends SubsystemBase {
         if (isEStopped){
             io.stop();
         }
-        filteredCurrentLeft = currentFilterLeft.calculate(getCurrentLeft());
-        filteredCurrentRight = currentFilterRight.calculate(getCurrentRight());
+        // filteredCurrentLeft = currentFilterLeft.calculate(getCurrentLeft());
+        // filteredCurrentRight = currentFilterRight.calculate(getCurrentRight());
         
     }
 
-    public void setVelocity(double velocity){
-        this.velocity = velocity;
-        velocityRequest = new VelocityVoltage(velocity);
-        motorLeft.motorLeft.setControl(velocityRequest);
-    }
+
 
     public Command setVelocityCommand(double velocity){
-        return Commands.runOnce(() -> setVelocity(velocity));
+        return Commands.runOnce(() -> io.setVelocity(velocity));
     }
 
-    public double getCurrentLeft() {
-        return motorLeft.motorLeft.getStatorCurrent().getValueAsDouble();
+    public Command setVoltageCommand(double volts){
+        return Commands.runOnce(() -> io.setVoltage(volts));
     }
+
+    // public double getCurrentLeft() {
+    //     return inputs.data.leftMotorCurrent();
+    // }
     
-    public double getCurrentRight() {
-        return motorLeft.motorRight.getStatorCurrent().getValueAsDouble();
-    }
+    // public double getCurrentRight() {
+    //     return motorLeft.motorRight.getStatorCurrent().getValueAsDouble();
+    // }
 
     public double getFilteredCurrentLeft() {
         return filteredCurrentLeft;
@@ -85,7 +84,7 @@ public class Intake extends SubsystemBase {
     }
     
     public double getVelocity(){
-        return velocity;
+        return inputs.intakeData.rightMotorVelocity();
     }
 
 

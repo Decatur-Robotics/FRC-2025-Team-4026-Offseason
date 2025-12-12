@@ -21,12 +21,11 @@ public class Elevator extends SubsystemBase {
     private double velocity;
     private ElevatorIOTalonFX mainMotor;
 
-    private final String inputsName;
     private boolean isEStopped = false;
     private ElevatorIO io;
     private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
 
-    private MotionMagicVoltage positionRequest;
+
     private VelocityVoltage velocityRequest;
 
     static{
@@ -50,14 +49,13 @@ public class Elevator extends SubsystemBase {
     public Elevator(ElevatorIO io){
         this.io = io;
         position = ElevatorConstants.STOWED_POSITION;
-        this.inputsName= this.getClass().getSimpleName() + "Inputs";
 
         
     }
 
     public void periodic(){
         io.updateInputs(inputs);
-        Logger.processInputs(inputsName, inputs);
+        Logger.processInputs("Elevator", inputs);
          
 
         
@@ -72,25 +70,22 @@ public class Elevator extends SubsystemBase {
         mainMotor.mainMotor.setVoltage(voltage);
     }
 
-    public void setPosition(double position){
-        this.position = position;
-        mainMotor.mainMotor.setControl(positionRequest.withPosition(position));
-    }
+    
 
     public Command setVoltageCommand(double voltage){
         return Commands.runOnce(() -> setVoltage(voltage));
     }
 
     public Command setPositionCommand(double position){
-        return Commands.runOnce(() -> setPosition(position));
+        return Commands.runOnce(() -> io.setPosition(position));
     }
 
     public double getPosition(){
-        return mainMotor.mainMotor.getPosition().getValueAsDouble();
+        return inputs.data.position();
     }
 
     public double getVoltage(){
-        return mainMotor.mainMotor.getMotorVoltage().getValueAsDouble();
+        return inputs.data.voltage();
     }
 
     

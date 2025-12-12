@@ -26,6 +26,9 @@ public interface ArmIO {
 
    default void stop(){}
 
+   default void setPosition(double position){
+   }
+
    default void runPosition(double position, double feedForward) {
    }
 

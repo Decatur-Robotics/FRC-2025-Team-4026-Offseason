@@ -10,13 +10,16 @@ import frc.robot.Constants;
 import frc.robot.Constants.RobotType;
 import frc.robot.Ports;
 import frc.robot.subsystems.superstructure.intake.IntakeIO.IntakeIOInputs;
+import frc.robot.subsystems.superstructure.wrist.WristConstants;
 
+import static frc.robot.util.PhoenixUtil.tryUntilOk;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 
 public class IntakeIOTalonFX implements IntakeIO{
@@ -30,7 +33,7 @@ public class IntakeIOTalonFX implements IntakeIO{
     private final StatusSignal<AngularVelocity> velocityRight;
     private final StatusSignal<Voltage> voltageLeft;
     private final StatusSignal<AngularVelocity> velocityLeft;
-
+    private VelocityVoltage velocityRequest;
 
 
     public IntakeIOTalonFX(){
@@ -50,9 +53,11 @@ public class IntakeIOTalonFX implements IntakeIO{
         velocityRight = motorRight.getVelocity();
         voltageLeft = motorLeft.getMotorVoltage();
         velocityLeft = motorLeft.getVelocity();
-        
-        BaseStatusSignal.setUpdateFrequencyForAll(40, voltageRight, velocityRight, voltageLeft, velocityLeft);
-
+        tryUntilOk(5,() -> BaseStatusSignal.setUpdateFrequencyForAll(40.0,
+        voltageRight, velocityRight, voltageLeft, velocityLeft));
+        //replace with port
+        tryUntilOk(5, () -> motorRight.optimizeBusUtilization());
+    
     }
 
     public void periodic(){
@@ -65,8 +70,10 @@ public class IntakeIOTalonFX implements IntakeIO{
 
     public void updateInputs(IntakeIOInputs inputs) {
         inputs.intakeData = new IntakeIO.IntakeIOData(
-            motorLeft.isConnected(),
-            motorRight.isConnected(),
+            BaseStatusSignal.isAllGood(
+                    voltageLeft, velocityLeft),
+                    BaseStatusSignal.isAllGood(
+                       voltageRight, velocityRight),
             voltageRight.getValueAsDouble(),
             velocityRight.getValueAsDouble(),
             voltageLeft.getValueAsDouble(),
@@ -78,6 +85,11 @@ public class IntakeIOTalonFX implements IntakeIO{
         voltageRequest = new VoltageOut(voltage);
         motorRight.setControl(voltageRequest);
         motorLeft.setControl(voltageRequest);
+    }
+
+        public void setVelocity(double velocity){
+        velocityRequest = new VelocityVoltage(velocity);
+        motorLeft.setControl(velocityRequest);
     }
 
     public void stop(){

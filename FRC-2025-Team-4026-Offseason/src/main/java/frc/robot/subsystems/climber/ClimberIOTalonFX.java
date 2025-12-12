@@ -50,7 +50,7 @@ public class ClimberIOTalonFX implements ClimberIO{
 
         positionTorqueCurrentRequest = new PositionTorqueCurrentFOC(0.0).withUpdateFreqHz(0.0);
 
-        BaseStatusSignal.setUpdateFrequencyForAll(20, position, voltage, velocity, supplyAmps);
+        BaseStatusSignal.setUpdateFrequencyForAll(40, position, voltage, velocity, supplyAmps);
     }
 
     //This is the periodic function, anything that needs to be updated every loop should go here

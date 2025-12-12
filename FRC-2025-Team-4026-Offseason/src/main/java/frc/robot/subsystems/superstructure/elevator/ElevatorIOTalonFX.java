@@ -7,10 +7,13 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
+import static frc.robot.util.PhoenixUtil.tryUntilOk;
 
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
@@ -21,6 +24,7 @@ import frc.robot.Constants;
 import frc.robot.Ports;
 import frc.robot.Constants.RobotType;
 import frc.robot.subsystems.superstructure.elevator.ElevatorIO.ElevatorIOInputs;
+import frc.robot.util.PhoenixUtil;
 
 public class ElevatorIOTalonFX implements ElevatorIO {
     public TalonFX mainMotor, followerMotor;
@@ -39,7 +43,7 @@ public class ElevatorIOTalonFX implements ElevatorIO {
     private final StatusSignal<AngularVelocity> followerVelocity;
     private final StatusSignal<Current> followerSupplyAmps;
     private final StatusSignal<Current> followerTorqueCurrent;
-
+    private MotionMagicVoltage positionRequest;
     
 
 
@@ -66,9 +70,16 @@ public class ElevatorIOTalonFX implements ElevatorIO {
         followerSupplyAmps = followerMotor.getSupplyCurrent();
         followerTorqueCurrent = followerMotor.getTorqueCurrent();
 
+        tryUntilOk(5,() -> BaseStatusSignal.setUpdateFrequencyForAll(40.0,
+        position, voltage, velocity, supplyAmps, torqueCurrent, followerVoltage, followerVelocity, followerSupplyAmps, followerTorqueCurrent));
+        tryUntilOk(5, () -> mainMotor.optimizeBusUtilization());
+
+        positionRequest = new MotionMagicVoltage(position.getValueAsDouble()).withEnableFOC(true);
         positionTorqueCurrentRequest = new PositionTorqueCurrentFOC(0.0).withUpdateFreqHz(0.0);
 
-        BaseStatusSignal.setUpdateFrequencyForAll(20, position, voltage, velocity, supplyAmps, torqueCurrent, followerVoltage, followerVelocity, followerSupplyAmps, followerTorqueCurrent);
+        BaseStatusSignal.setUpdateFrequencyForAll(40, position, voltage, velocity, supplyAmps, torqueCurrent, followerVoltage, followerVelocity, followerSupplyAmps, followerTorqueCurrent);
+
+        PhoenixUtil.registerSignals(true, position, voltage, velocity, supplyAmps, torqueCurrent, followerVoltage, followerVelocity, followerSupplyAmps, followerTorqueCurrent);
 
     }
 
@@ -83,12 +94,14 @@ public class ElevatorIOTalonFX implements ElevatorIO {
 
     @Override
     public void updateInputs(ElevatorIOInputs inputs) {
-      inputs.data = new ElevatorIO.ElevatorIOData(
-            mainMotor.isConnected(),
-            followerMotor.isConnected(),
-            position.getValueAsDouble(),
+      inputs.data = new ElevatorIOData(
+            BaseStatusSignal.isAllGood(
+                position, voltage, velocity, supplyAmps, torqueCurrent),
+            BaseStatusSignal.isAllGood(
+                followerVoltage, followerVelocity, followerSupplyAmps, followerTorqueCurrent),
+            Units.rotationsToRadians(position.getValueAsDouble()),
             voltage.getValueAsDouble(),
-            velocity.getValueAsDouble(),
+            Units.rotationsToRadians(velocity.getValueAsDouble()),
             supplyAmps.getValueAsDouble(),
             torqueCurrent.getValueAsDouble(),
             followerVoltage.getValueAsDouble(),
@@ -103,6 +116,10 @@ public class ElevatorIOTalonFX implements ElevatorIO {
     //IDK if this goes here or in the subsystem
     public void setVoltage(double voltage) {
         mainMotor.setControl(voltageRequest.withOutput(voltage));
+    }
+
+    public void setPosition(double position){
+        mainMotor.setControl(positionRequest.withPosition(position));
     }
 
     @Override

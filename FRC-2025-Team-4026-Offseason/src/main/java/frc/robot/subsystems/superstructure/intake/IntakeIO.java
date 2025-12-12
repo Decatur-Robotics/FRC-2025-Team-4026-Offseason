@@ -23,6 +23,10 @@ public interface IntakeIO {
     default void setVoltage(double voltage) {
     
     }
+
+    default void setVelocity(double velocity){
+        
+    }
     default void runOpenLoop(double output){
         
     }

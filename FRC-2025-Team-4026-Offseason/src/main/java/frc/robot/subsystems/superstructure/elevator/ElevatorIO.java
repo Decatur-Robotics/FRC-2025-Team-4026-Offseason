@@ -15,7 +15,7 @@ public interface ElevatorIO {
     record ElevatorIOData(
         Boolean mainMotorConnected,
         Boolean followerMotorConnected,
-        Double position,
+         Double position,
         Double voltage,
         Double velocity,
         Double supplyAmps,
@@ -30,6 +30,9 @@ public interface ElevatorIO {
     
       
     default void updateInputs(ElevatorIOInputs inputs) {
+    }
+
+    default void setPosition(double position){
     }
 
     default void setVoltage(double voltage) {

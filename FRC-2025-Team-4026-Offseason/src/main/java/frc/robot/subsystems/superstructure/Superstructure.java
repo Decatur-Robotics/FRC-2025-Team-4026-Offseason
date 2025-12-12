@@ -40,10 +40,10 @@ public class Superstructure {
     public void setState(SuperstructureState targetState) {
         this.targetState = targetState.copyInstance();
 
-        elevator.setPosition(targetState.elevatorPosition);
-        arm.setPosition(targetState.armPosition);
-        wrist.setVolts(targetState.wristCurrent);
-        intake.setVelocity(targetState.intakeVelocity);
+        elevator.setPositionCommand(targetState.elevatorPosition);
+        arm.setPositionCommand(targetState.armPosition);
+        wrist.setVoltsCommand(targetState.wristCurrent);
+        intake.setVelocityCommand(targetState.intakeVelocity);
     }
 
     // Is at targets
@@ -105,28 +105,28 @@ public class Superstructure {
         targetState.elevatorPosition = position;
         targetState.elevatorPosition = position;
         
-        elevator.setPosition(position);
+        elevator.setPositionCommand(position);
     }
 
     public void setArmPosition(double position) {
         targetState.armPosition = position;
         targetState.armPosition = position;
         
-        arm.setPosition(position);
+        arm.setPositionCommand(position);
     }
 
     public void setWristCurrent(double current) {
         targetState.wristCurrent = current;
         targetState.wristCurrent = current;
         
-        wrist.setCurrent(current);
+        wrist.setCurrentCommand(current);
     }
 
     public void setIntakeVelocity(double velocity) {
         targetState.intakeVelocity = velocity;
         targetState.intakeVelocity = velocity;
         
-        intake.setVelocity(velocity);
+        intake.setVelocityCommand(velocity);
     }
 
      public Command intakeCoralGroundCommand() {

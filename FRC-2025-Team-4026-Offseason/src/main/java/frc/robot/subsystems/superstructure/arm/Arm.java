@@ -21,7 +21,6 @@ public class Arm extends SubsystemBase{
 
     private CANcoder throughBoreEncoder;
 
-    private MotionMagicVoltage positionRequest;
     private ArmIO io;
     private boolean isEstopped;
 
@@ -41,14 +40,17 @@ public class Arm extends SubsystemBase{
         }
     }
 
-    public void setPosition(double position){
-        motor.motor.setControl(positionRequest.withPosition(position));
-    }
 
     
 
     public double getPosition(){
         return throughBoreEncoder.getPosition().getValueAsDouble();
+    }
+
+    public Command setPositionCommand(double position){
+        return Commands.runOnce(() -> {
+            io.setPosition(position);
+        });
     }
 
     public Command zeroCommand(ArmIOTalonFX motor){

@@ -8,6 +8,8 @@ import com.ctre.phoenix6.controls.VoltageOut;
 
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.LinearFilter;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 
@@ -17,9 +19,7 @@ public class Wrist extends SubsystemBase{
     private final WristIO io;
     private double volts = 0.0;
     protected final WristIOInputsAutoLogged inputs = new WristIOInputsAutoLogged();
-    private final TorqueCurrentFOC TorqueCurrentOut = new TorqueCurrentFOC(WristConstants.PERPENDICULAR_CURRENT);
-    private final VoltageOut VoltageOut = new VoltageOut(0.0);
-    private final NeutralOut neutralOut = new NeutralOut();
+
     private WristIOTalonFX wristMotor;
     private Debouncer slamDebouncer;
     private double filteredVelocity;
@@ -69,21 +69,20 @@ public class Wrist extends SubsystemBase{
     }
     
     
-    public void setCurrent(double current){
-        wristMotor.wristMotor.setControl(TorqueCurrentOut.withOutput(current));
-    }
-    
-    public void setVolts(double volts){
-        wristMotor.wristMotor.setControl(VoltageOut.withOutput(volts));
-    }
+  
 
     public double getCurrent() {
         return inputs.data.torqueCurrentAmps();
     }
     
-    public void stop(WristIOTalonFX wristMotor) {
-        wristMotor.wristMotor.setControl(neutralOut);
+    public Command setVoltsCommand(double volts) {
+        return Commands .runOnce(() -> io.setVolts(volts));
     }
+
+    public Command setCurrentCommand(double current) {
+        return Commands.runOnce(() -> io.setCurrent(current));
+    }
+
     
     public boolean isSlammed() {
         return isSlammed;
