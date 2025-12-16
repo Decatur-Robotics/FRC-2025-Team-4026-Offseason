@@ -7,6 +7,8 @@
 
 package frc.robot.subsystems.drive;
 
+import org.ironmaple.simulation.drivesims.SwerveModuleSimulation;
+
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
@@ -18,6 +20,7 @@ import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
+import frc.robot.util.PhoenixUtil;
 
 /**
  * Physics sim implementation of module IO. The sim models are configured using a set of module
@@ -35,9 +38,11 @@ public class ModuleIOSim implements ModuleIO {
   private static final double TURN_KD = 0.0;
   private static final DCMotor DRIVE_GEARBOX = DCMotor.getKrakenX60Foc(1);
   private static final DCMotor TURN_GEARBOX = DCMotor.getKrakenX60Foc(1);
-
+  private final SwerveModuleSimulation simulation;
   private final DCMotorSim driveSim;
   private final DCMotorSim turnSim;
+
+
 
   private boolean driveClosedLoop = false;
   private boolean turnClosedLoop = false;
@@ -49,7 +54,12 @@ public class ModuleIOSim implements ModuleIO {
 
   public ModuleIOSim(
       SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>
-          constants) {
+          constants, SwerveModuleSimulation simulation) {
+
+            // super(PhoenixUtil.regulateModuleConstantForSimulation(constants));
+             this.simulation = simulation;
+
+            // simulation.useDriveMotorController(new PhoenixUtil.TalonFXMotorControllerSim(ModuleIOTalonFX.driveTalon));
     // Create drive and turn sim models
     driveSim =
         new DCMotorSim(
