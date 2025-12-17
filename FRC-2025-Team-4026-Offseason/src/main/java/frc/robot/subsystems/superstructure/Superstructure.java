@@ -37,13 +37,20 @@ public class Superstructure {
         led.setAllPixels(LEDConstants.BLUE);
     }
 
-    public void setState(SuperstructureState targetState) {
+    public Command setState(SuperstructureState targetState) {
         this.targetState = targetState.copyInstance();
 
-        elevator.setPositionCommand(targetState.elevatorPosition);
-        arm.setPositionCommand(targetState.armPosition);
-        wrist.setVoltsCommand(targetState.wristCurrent);
-        intake.setVelocityCommand(targetState.intakeVelocity);
+        // elevator.setPositionCommand(targetState.elevatorPosition);
+        // arm.setPositionCommand(targetState.armPosition);
+        // wrist.setVoltsCommand(targetState.wristCurrent);
+        // intake.setVelocityCommand(targetState.intakeVelocity);
+
+        return Commands.parallel(
+            elevator.setPositionCommand(targetState.elevatorPosition),
+            arm.setPositionCommand(targetState.armPosition),
+            wrist.setVoltsCommand(targetState.wristCurrent),
+            intake.setVelocityCommand(targetState.intakeVelocity)
+        );
     }
 
     // Is at targets

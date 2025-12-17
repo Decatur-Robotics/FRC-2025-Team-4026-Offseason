@@ -4,6 +4,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 
 
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.Constants;
@@ -33,6 +34,8 @@ public class IntakeIOTalonFX implements IntakeIO{
     private final StatusSignal<AngularVelocity> velocityRight;
     private final StatusSignal<Voltage> voltageLeft;
     private final StatusSignal<AngularVelocity> velocityLeft;
+    private final StatusSignal<Current> currentLeft;
+    private final StatusSignal<Current> currentRight;
     private VelocityVoltage velocityRequest;
 
 
@@ -53,6 +56,8 @@ public class IntakeIOTalonFX implements IntakeIO{
         velocityRight = motorRight.getVelocity();
         voltageLeft = motorLeft.getMotorVoltage();
         velocityLeft = motorLeft.getVelocity();
+        currentLeft = motorLeft.getSupplyCurrent();
+        currentRight = motorRight.getSupplyCurrent();
         tryUntilOk(5,() -> BaseStatusSignal.setUpdateFrequencyForAll(40.0,
         voltageRight, velocityRight, voltageLeft, velocityLeft));
         //replace with port
@@ -76,8 +81,10 @@ public class IntakeIOTalonFX implements IntakeIO{
                        voltageRight, velocityRight),
             voltageRight.getValueAsDouble(),
             velocityRight.getValueAsDouble(),
+            currentRight.getValueAsDouble(),
             voltageLeft.getValueAsDouble(),
-            velocityLeft.getValueAsDouble()
+            velocityLeft.getValueAsDouble(),
+            currentLeft.getValueAsDouble()
         );
     }
 

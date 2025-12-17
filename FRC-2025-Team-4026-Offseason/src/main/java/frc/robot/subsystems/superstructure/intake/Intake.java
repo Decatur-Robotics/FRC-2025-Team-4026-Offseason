@@ -52,8 +52,8 @@ public class Intake extends SubsystemBase {
         if (isEStopped){
             io.stop();
         }
-        // filteredCurrentLeft = currentFilterLeft.calculate(getCurrentLeft());
-        // filteredCurrentRight = currentFilterRight.calculate(getCurrentRight());
+        filteredCurrentLeft = currentFilterLeft.calculate(getCurrentLeft());
+        filteredCurrentRight = currentFilterRight.calculate(getCurrentRight());
         
     }
 
@@ -67,13 +67,13 @@ public class Intake extends SubsystemBase {
         return Commands.runOnce(() -> io.setVoltage(volts));
     }
 
-    // public double getCurrentLeft() {
-    //     return inputs.data.leftMotorCurrent();
-    // }
+    public double getCurrentLeft() {
+        return inputs.intakeData.leftMotorCurrent();
+    }
     
-    // public double getCurrentRight() {
-    //     return motorLeft.motorRight.getStatorCurrent().getValueAsDouble();
-    // }
+    public double getCurrentRight() {
+        return inputs.intakeData.rightMotorCurrent();
+    }
 
     public double getFilteredCurrentLeft() {
         return filteredCurrentLeft;
