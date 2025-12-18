@@ -4,6 +4,7 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -31,6 +32,8 @@ public class ArmIOTalonFX implements ArmIO{
     private final StatusSignal<AngularVelocity> velocity;
     private final StatusSignal<Current> supplyAmps;
     private final StatusSignal<Current> torqueCurrent;
+    
+    private MotionMagicVoltage positionRequest;
 
     private VoltageOut voltageRequest;
     public ArmIOTalonFX(){
@@ -53,7 +56,7 @@ public class ArmIOTalonFX implements ArmIO{
 
         positionTorqueCurrentRequest = new PositionTorqueCurrentFOC(0.0).withUpdateFreqHz(0.0);
 
-        BaseStatusSignal.setUpdateFrequencyForAll(20,position,voltage,velocity,supplyAmps,torqueCurrent);
+        BaseStatusSignal.setUpdateFrequencyForAll(40,position,voltage,velocity,supplyAmps,torqueCurrent);
     }
     public void periodic(){
             if(motor.hasResetOccurred()){
@@ -80,6 +83,11 @@ public class ArmIOTalonFX implements ArmIO{
     public void setVoltage(double voltage) {
         motor.setControl(voltageRequest.withOutput(voltage));
     }
+
+    public void setPosition(double position){
+        motor.setControl(positionRequest.withPosition(position));
+    }
+
 
     public void stop() {
         motor.stopMotor();

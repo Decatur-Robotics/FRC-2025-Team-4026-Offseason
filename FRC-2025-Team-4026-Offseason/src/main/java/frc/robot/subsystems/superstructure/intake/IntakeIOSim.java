@@ -44,7 +44,9 @@ public class IntakeIOSim implements IntakeIO {
         0.0,
         simState.get(1),
         0.0,
-        simState.get(1)
+        0.0,
+        simState.get(1),
+        0.0
     );
 
     }
