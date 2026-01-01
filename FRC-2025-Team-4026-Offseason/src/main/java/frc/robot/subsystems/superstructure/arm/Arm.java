@@ -59,7 +59,7 @@ public class Arm extends SubsystemBase{
             motor.motor.setVoltage(voltage);
         }),
         Commands.runOnce(() -> {
-            motor.motor.setPosition(0.0);
+            motor.motor.setPosition(0.0); 
         }));
     }
 }

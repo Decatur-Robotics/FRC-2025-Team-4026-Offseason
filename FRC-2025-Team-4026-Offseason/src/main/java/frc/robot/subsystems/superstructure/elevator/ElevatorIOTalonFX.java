@@ -103,11 +103,9 @@ public class ElevatorIOTalonFX implements ElevatorIO {
             voltage.getValueAsDouble(),
             Units.rotationsToRadians(velocity.getValueAsDouble()),
             supplyAmps.getValueAsDouble(),
-            torqueCurrent.getValueAsDouble(),
             followerVoltage.getValueAsDouble(),
             followerVelocity.getValueAsDouble(),
-            followerSupplyAmps.getValueAsDouble(),
-            followerTorqueCurrent.getValueAsDouble()
+            followerSupplyAmps.getValueAsDouble()
         );
           
         

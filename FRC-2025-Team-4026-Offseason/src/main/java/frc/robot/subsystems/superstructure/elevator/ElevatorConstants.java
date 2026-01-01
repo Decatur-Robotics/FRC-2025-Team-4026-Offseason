@@ -1,5 +1,19 @@
 package frc.robot.subsystems.superstructure.elevator;
 
+import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Kilograms;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Pounds;
+
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.Mass;
+
 public class ElevatorConstants {
     public static final double kP = 0.5;
     public static final double kI = 0.0;
@@ -29,5 +43,31 @@ public class ElevatorConstants {
     public static final double SCORE_L4_POSITION = 43.5;
     public static final double PROCESSOR_POSITION = 0;
     public static final double NET_POSITION = 54;
+
+     public static final CurrentLimitsConfigs CURRENT_LIMITS_CONFIGS = new CurrentLimitsConfigs()
+        .withStatorCurrentLimitEnable(true)
+        .withStatorCurrentLimit(60);
+
+    public static final Current STATOR_CURRENT_LIMIT = Amps.of(60);
+    public record ElevatorHardwareConstants(
+        Distance CHAIN_LENGTH,
+            int ELEVATOR_DRUM_WHEEL_TEETH,
+            int ELEVATOR_STAGES,
+            double ELEVATOR_GEARING_REDUCTION,
+            DCMotor ELEVATOR_GEARBOX,
+            Mass ELEVATOR_CARRIAGE_WEIGHT,
+            Distance ELEVATOR_MAX_HEIGHT
+    ) {
+    }
+
+    public static final ElevatorHardwareConstants HARDWARE_CONSTANTS = new ElevatorHardwareConstants(
+        Distance.ofBaseUnits(1.32, Meters),
+            22,
+            2,
+            15.0,
+            DCMotor.getFalcon500Foc(2),
+            Mass.ofBaseUnits(9, Kilograms),
+            Distance.ofBaseUnits(2.3, Meters)
+    );
 
 }

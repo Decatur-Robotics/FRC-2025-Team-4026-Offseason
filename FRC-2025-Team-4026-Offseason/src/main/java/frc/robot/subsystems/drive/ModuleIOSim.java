@@ -56,7 +56,7 @@ public class ModuleIOSim implements ModuleIO {
       SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>
           constants, SwerveModuleSimulation simulation) {
 
-            // super(PhoenixUtil.regulateModuleConstantForSimulation(constants));
+             //super(PhoenixUtil.regulateModuleConstantForSimulation(constants));
              this.simulation = simulation;
 
             // simulation.useDriveMotorController(new PhoenixUtil.TalonFXMotorControllerSim(ModuleIOTalonFX.driveTalon));

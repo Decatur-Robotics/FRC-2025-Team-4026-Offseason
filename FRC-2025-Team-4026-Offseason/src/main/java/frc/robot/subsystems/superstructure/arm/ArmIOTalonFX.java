@@ -72,8 +72,7 @@ public class ArmIOTalonFX implements ArmIO{
             position.getValueAsDouble(),
             voltage.getValueAsDouble(),
             velocity.getValueAsDouble(),
-            supplyAmps.getValueAsDouble(),
-            torqueCurrent.getValueAsDouble()
+            supplyAmps.getValueAsDouble()
         );
           
         

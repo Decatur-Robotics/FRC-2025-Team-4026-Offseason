@@ -9,7 +9,7 @@ public interface ElevatorIO {
 
     @AutoLog
     class ElevatorIOInputs{
-        public ElevatorIOData data = new ElevatorIOData(false, false, 0.0, 0.0, 0.0, 0.0 , 0.0, 0.0, 0.0,0.0,0.0);
+        public ElevatorIOData data = new ElevatorIOData(false, false, 0.0, 0.0, 0.0 , 0.0, 0.0, 0.0,0.0);
     }
     
     record ElevatorIOData(
@@ -19,11 +19,9 @@ public interface ElevatorIO {
         Double voltage,
         Double velocity,
         Double supplyAmps,
-        Double torqueCurrent,
         Double followerVoltage,
         Double followerVelocity,
-        Double followerSupplyAmps,
-        Double followerTorqueCurrent
+        Double followerSupplyAmps
     ){}
 
        

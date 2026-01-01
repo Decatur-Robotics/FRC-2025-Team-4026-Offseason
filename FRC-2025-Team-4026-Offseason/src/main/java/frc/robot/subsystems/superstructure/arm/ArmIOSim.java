@@ -1,6 +1,17 @@
 package frc.robot.subsystems.superstructure.arm;
 
 
+import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Kilograms;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Volts;
+
+import org.ironmaple.simulation.motorsims.SimulatedBattery;
+import org.ironmaple.simulation.motorsims.SimulatedMotorController;
+
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
@@ -13,97 +24,61 @@ import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.system.NumericalIntegration;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import frc.robot.subsystems.superstructure.elevator.ElevatorIO.ElevatorIOData;
 import frc.robot.subsystems.superstructure.elevator.ElevatorIO.ElevatorIOInputs;
+import frc.robot.Robot;
+import frc.robot.subsystems.superstructure.arm.ArmConstants.ArmHardwareConstants;
 
 public class ArmIOSim implements ArmIO{
-    public static final Double armMassKG = Units.lbsToKilograms(16);
-    public static final DCMotor gearbox = DCMotor.getFalcon500Foc(1).withReduction(45);
+    // public static final Double armMassKG = Units.lbsToKilograms(16);
+    // public static final DCMotor gearbox = DCMotor.getFalcon500Foc(1).withReduction(45);
 
-    public static final Matrix<N2, N2> A = 
-    MatBuilder.fill(Nat.N2(), Nat.N2(), 0, 1, 0, -gearbox.KtNMPerAmp/(gearbox.rOhms*Math.pow(0, 0)));
-    public static final Vector<N2> B = VecBuilder.fill(0.0, gearbox.KtNMPerAmp/(armMassKG));
+    private ArmHardwareConstants hardwareConstants = ArmConstants.HARDWARE_CONSTANTS;
+    private final SingleJointedArmSim armSim;
+    private final SimulatedMotorController.GenericMotorController motorController;
 
-    private Vector<N2> simState;
-    private double inputTorqueCurrent;
-    private double appliedVoltage;
-
-    private final PIDController controller = new PIDController(0.0, 0.0, 0.0);
-    private boolean closedLoop = false;
-    private double feedForward = 0;
-
-    public ArmIOSim() {
-        simState = VecBuilder.fill(0.0, 0.0);
-    }
-    @Override
-    public void updateInputs(ArmIOInputs inputs) {
-        if(!closedLoop){
-            controller.reset();
-        }
-        else{
-            inputTorqueCurrent = controller.calculate(simState.get(0, 0), 0.0) + feedForward;
-            // update(1/1000);
-        }
-
-        inputs.data = new ArmIOData(
-        true,
-        simState.get(0),
-        simState.get(1),
-        appliedVoltage,
-        Math.copySign(inputTorqueCurrent, appliedVoltage),
-        Math.copySign(inputTorqueCurrent, appliedVoltage)
-        );
-    }
-
-    public void runOpenLoop(double output) {
-        setInputTorqueCurrent(output);
-        closedLoop = false;
+    private Voltage targetVoltage;
+   // private final Angle encoderOffset;
     
+
+    public ArmIOSim(){
+
+        this.armSim = new SingleJointedArmSim(hardwareConstants.ARM_GEARBOX(), hardwareConstants.ARM_GEARING_REDUCTION(), SingleJointedArmSim.estimateMOI(hardwareConstants.ARM_LENGTH().in(Meters), hardwareConstants.ARM_MASS().in(Kilograms)), hardwareConstants.ARM_MASS().in(Kilograms), hardwareConstants.ARM_MIN_ANGLE().in(Degrees), hardwareConstants.ARM_MAX_ANGLE().in(Degrees), true, hardwareConstants.ARM_MAX_ANGLE().in(Degrees));
+
+        this.motorController = new SimulatedMotorController.GenericMotorController(DCMotor.getKrakenX60Foc(1));
+        this.targetVoltage = Volts.zero();
+
+        SimulatedBattery.addElectricalAppliances(this::getSupplyCurrent);
+        armSim.update(0.0);
+
     }
 
-    public void runVolts(double volts) {
-        appliedVoltage = volts;
-        closedLoop = false;
-    }
-
-
-    public void stop(){
-        runOpenLoop(0);
-    }
-
-
-    public void runPosition(double position, double feedForward) {
-        controller.setSetpoint(position);
-        this.feedForward = feedForward;
-        closedLoop = true;
-    }
-
-    public void setPID(double kP, double kI, double kD) {
-        controller.setPID(kP, kI, kD);
-        
-    }
-
-    public void setInputTorqueCurrent(double torqueCurrent) {
-        this.inputTorqueCurrent = torqueCurrent;
-        appliedVoltage = gearbox.getVoltage(gearbox.getTorque(inputTorqueCurrent), simState.get(1, 0));
-    }
-
-    public void setInputVoltage(double voltage) {
-        setInputTorqueCurrent(gearbox.getCurrent(simState.get(1, 0), voltage));
-    }
-
-        public void update(double dt) {
-        inputTorqueCurrent = MathUtil.clamp(inputTorqueCurrent, -gearbox.stallCurrentAmps, gearbox.stallCurrentAmps);
-        Matrix<N2, N1> updatedState = NumericalIntegration.rkdp((Matrix<N2, N1> x, Matrix<N1, N1> u) -> A.times(x).plus(B.times(u).plus(VecBuilder.fill(0, 0))), simState, MatBuilder.fill(Nat.N1(), Nat.N1(), inputTorqueCurrent), dt);
-        simState = VecBuilder.fill(updatedState.get(0, 0), updatedState.get(1, 0));
-        if(simState.get(0)<=0){
-            simState.set(1, 0, 0);
-            simState.set(0, 0, 0);
+    public void updateInputs(ArmIOInputs inputs){
+        Angle armAngle = Radians.of(armSim.getAngleRads()*hardwareConstants.ARM_GEARING_REDUCTION());
+        AngularVelocity armAngularVelocity = RadiansPerSecond.of(armSim.getVelocityRadPerSec()*hardwareConstants.ARM_GEARING_REDUCTION());
+        Voltage realVoltage = motorController.constrainOutputVoltage(armAngle, armAngularVelocity, targetVoltage);
+        realVoltage = SimulatedBattery.clamp(realVoltage);
+        if(DriverStation.isDisabled()){
+            realVoltage = Volts.zero();
         }
-        if (simState.get(0)>= 0.762){
-            simState.set(1, 0, 0);
-            simState.set(0, 0, 0.762);{
-            
-        }
-    }}
+        armSim.setInputVoltage(realVoltage.in(Volts));
+        //Robot simulation is iterated 5 times, less for performance, more for accurracy
+        for (int i = 0; i < 5; i++) armSim.update(Robot.defaultPeriodSecs / 5);
+
+        inputs.data = new ArmIOData(true , realVoltage.in(Volts), armAngle.in(Radians), armAngularVelocity.in(RadiansPerSecond), Amps.of(armSim.getCurrentDrawAmps()).in(Amps));
+    }
+
+    private Current getSupplyCurrent(){
+        return Amps.of(armSim.getCurrentDrawAmps());
+    }
+
+    public void setVoltage(Voltage voltage) {
+        this.targetVoltage = voltage;
+    }
 }

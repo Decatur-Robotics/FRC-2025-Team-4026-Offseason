@@ -3,7 +3,23 @@ package frc.robot.subsystems.superstructure.elevator;
 import edu.wpi.first.math.system.NumericalIntegration;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.simulation.ElevatorSim;
+
+import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Kilograms;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Pounds;
+import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.Volts;
+
+import org.ironmaple.simulation.motorsims.SimulatedBattery;
+import org.ironmaple.simulation.motorsims.SimulatedMotorController;
 
 import com.ctre.phoenix6.controls.TorqueCurrentFOC;
 
@@ -17,104 +33,67 @@ import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N2;
+import frc.robot.Robot;
+import frc.robot.subsystems.superstructure.elevator.ElevatorConstants.*;
 
 public class ElevatorIOSim implements ElevatorIO {
-    public static final Double carrageMassKG = Units.lbsToKilograms(20);
-    public static final Double stageMassKG = Units.lbsToKilograms(5.8);
-    public static final DCMotor gearbox = DCMotor.getFalcon500Foc(2).withReduction(0);
+    private ElevatorHardwareConstants hardwareConstants = ElevatorConstants.HARDWARE_CONSTANTS;
 
-    public static final Matrix<N2, N2> A = 
-    MatBuilder.fill(Nat.N2(), Nat.N2(), 0, 1, 0, -gearbox.KtNMPerAmp/(gearbox.rOhms*Math.pow(0, 0)));
-    public static final Vector<N2> B = VecBuilder.fill(0.0, gearbox.KtNMPerAmp/(carrageMassKG*stageMassKG));
-    private Vector<N2> simState;
-    private double inputTorqueCurrent;
-    private double appliedVoltage;
+    private final ElevatorSim elevatorSim;
+    private final SimulatedMotorController.GenericMotorController motorController;
 
+    private Voltage targetVoltage;
+    private double drumCircumference;
     private final PIDController controller = new PIDController(0.0, 0.0, 0.0);
-    private boolean closedLoop = false;
-    private double feedForward = 0;
 
     public ElevatorIOSim() {
-        simState = VecBuilder.fill(0.0, 0.0);
+        this.drumCircumference = hardwareConstants.ELEVATOR_DRUM_WHEEL_TEETH()*hardwareConstants.CHAIN_LENGTH().in(Meters);
+        this.elevatorSim = new ElevatorSim(hardwareConstants.ELEVATOR_GEARBOX(), hardwareConstants.ELEVATOR_GEARING_REDUCTION(), hardwareConstants.ELEVATOR_CARRIAGE_WEIGHT().in(Kilograms), 0.0, 0, hardwareConstants.ELEVATOR_MAX_HEIGHT().in(Meters), true, 0);
+
+        this.motorController = new SimulatedMotorController.GenericMotorController(hardwareConstants.ELEVATOR_GEARBOX());
+        motorController.withCurrentLimit(ElevatorConstants.STATOR_CURRENT_LIMIT);
+         SimulatedBattery.addElectricalAppliances(this::getSupplyCurrent);
+        elevatorSim.update(0.0);
+        this.targetVoltage = Volts.zero();
     }
 
     @Override
     public void updateInputs(ElevatorIOInputs inputs) {
-        if(!closedLoop){
-            controller.reset();
-            
-        }
-        else{
-            
-            inputTorqueCurrent = controller.calculate(simState.get(0, 0), 0.0) + feedForward;
-            // update(1/1000);
-        }
-        inputs.data = new ElevatorIOData(
-        true,
-        true,
-        simState.get(0),
-        simState.get(1),
-        appliedVoltage,
-        Math.copySign(inputTorqueCurrent, appliedVoltage),
-        Math.copySign(inputTorqueCurrent, appliedVoltage),
-        0.0,
-        0.0,
-        0.0,
-        0.0
-    );
+        double drumRotations = elevatorSim.getPositionMeters() / hardwareConstants.ELEVATOR_STAGES()/hardwareConstants.CHAIN_LENGTH().in(Meters)/hardwareConstants.ELEVATOR_DRUM_WHEEL_TEETH();
+        Angle motorAngle = Rotations.of(drumRotations * hardwareConstants.ELEVATOR_GEARING_REDUCTION());
+        double drumVelocityRotationsPerSecond = elevatorSim.getVelocityMetersPerSecond()
+        / hardwareConstants.ELEVATOR_STAGES()
+        / hardwareConstants.ELEVATOR_DRUM_WHEEL_TEETH()
+        / hardwareConstants.CHAIN_LENGTH().in(Meters);
+        AngularVelocity motorVelocity = RotationsPerSecond.of(drumVelocityRotationsPerSecond * hardwareConstants.ELEVATOR_GEARING_REDUCTION());
+        Voltage realVoltage = motorController.constrainOutputVoltage(motorAngle, motorVelocity, targetVoltage);
+        realVoltage = SimulatedBattery.clamp(realVoltage);
+        elevatorSim.setInputVoltage(realVoltage.in(Volts));
+        //Runs simulation in 5 iterations
+        for (int i = 0; i < 5; i++) elevatorSim.update(Robot.defaultPeriodSecs / 5.0);
+
+        inputs.data = new ElevatorIOData(true,
+         true, 
+         motorAngle.in(Rotations), 
+         realVoltage.in(Volts), 
+         motorVelocity.in(RotationsPerSecond), 
+         getSupplyCurrent().in(Amps), realVoltage.in(Volts), 
+         motorVelocity.in(RotationsPerSecond), 
+         getSupplyCurrent().in(Amps));
     }
 
 
-    public void runOpenLoop(double output) {
-        setInputTorqueCurrent(output);
-        closedLoop = false;
-    
+    private Current getSupplyCurrent() {
+        return Amps.of(elevatorSim.getCurrentDrawAmps());
     }
 
-    public void runVolts(double volts) {
-        appliedVoltage = volts;
-        closedLoop = false;
-    }
-
-    public void stop(){
-        runOpenLoop(0);
-    }
-
-    public void runPosition(double position, double feedForward) {
-        controller.setSetpoint(position);
-        this.feedForward = feedForward;
-        closedLoop = true;
-    }
-
-    public void setPID(double kP, double kI, double kD) {
-        controller.setPID(kP, kI, kD);
-        
+    public void setVoltage(double voltage) {
+        this.targetVoltage = Volts.of(voltage);
     }
 
 
-    public void setInputTorqueCurrent(double torqueCurrent) {
-        this.inputTorqueCurrent = torqueCurrent;
-        appliedVoltage = gearbox.getVoltage(gearbox.getTorque(inputTorqueCurrent), simState.get(1, 0));
-    }
-    
-    public void setInputVoltage(double voltage) {
-        setInputTorqueCurrent(gearbox.getCurrent(simState.get(1, 0), voltage));
-    }
 
-    public void update(double dt) {
-        inputTorqueCurrent = MathUtil.clamp(inputTorqueCurrent, -gearbox.stallCurrentAmps, gearbox.stallCurrentAmps);
-        Matrix<N2, N1> updatedState = NumericalIntegration.rkdp((Matrix<N2, N1> x, Matrix<N1, N1> u) -> A.times(x).plus(B.times(u).plus(VecBuilder.fill(0, 0))), simState, MatBuilder.fill(Nat.N1(), Nat.N1(), inputTorqueCurrent), dt);
-        simState = VecBuilder.fill(updatedState.get(0, 0), updatedState.get(1, 0));
-        if(simState.get(0)<=0){
-            simState.set(1, 0, 0);
-            simState.set(0, 0, 0);
-        }
-        if (simState.get(0)>= 0.762){
-            simState.set(1, 0, 0);
-            simState.set(0, 0, 0.762);{
-            
-        }
-    }}
+
 }
     
 

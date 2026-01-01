@@ -1,7 +1,20 @@
 package frc.robot.subsystems.superstructure.arm;
 
+import static edu.wpi.first.units.Units.Degree;
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Kilograms;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Rotations;
+
+import org.dyn4j.geometry.Mass;
+import org.dyn4j.geometry.Rotation;
+
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.MagnetSensorConfigs;
+
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Distance;
 
 public class ArmConstants {
     public static final double kP = 8.0;
@@ -34,4 +47,35 @@ public class ArmConstants {
 
     public static final CANcoderConfiguration ENCODER_CONFIG = new CANcoderConfiguration()
     .withMagnetSensor(new MagnetSensorConfigs().withMagnetOffset(0.008));
+
+    
+
+    public record ArmHardwareConstants(
+        Distance ARM_LENGTH,
+        edu.wpi.first.units.measure.Mass ARM_MASS,
+        DCMotor ARM_GEARBOX,
+        double ARM_GEARING_REDUCTION,
+        Angle ARM_MIN_ANGLE,
+        Angle ARM_MAX_ANGLE,
+        Angle ENCODER_READING_AT_MAX_ANGLE,
+        int ENCODER_ID,
+        boolean ENCODER_INVERTED,
+        int ARM_PORT,
+        boolean ARM_INVERTED
+    ) {
+    }
+    
+    public static final ArmHardwareConstants HARDWARE_CONSTANTS = new ArmHardwareConstants(
+        Meters.of(0.44),
+        Kilograms.of(7),
+        DCMotor.getKrakenX60Foc(1),
+        44.0/16 * 15.0,
+        Degrees.of(82.8),
+        Degrees.of(-38), 
+        Rotations.of(.231), 
+        40,
+        false,
+        39,
+        true
+    );
 }
