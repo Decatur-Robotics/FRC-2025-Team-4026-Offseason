@@ -1,50 +1,50 @@
 package frc.robot.subsystems.superstructure.wrist;
 
+import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Volts;
+
+import org.ironmaple.simulation.motorsims.MapleMotorSim;
+import org.ironmaple.simulation.motorsims.SimulatedBattery;
+import org.ironmaple.simulation.motorsims.SimulatedMotorController;
+
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
+import edu.wpi.first.wpilibj.simulation.LinearSystemSim;
 
 public class WristIOSim implements WristIO {
-  private final DCMotorSim sim;
-  private final DCMotor gearbox;
-  private double appliedVoltage = 0.0;
-    //fix this stuff
-  public WristIOSim(DCMotor motorModel, double reduction, double moi) {
 
-    gearbox = motorModel;
-    sim =
-        new DCMotorSim(LinearSystemId.createDCMotorSystem(motorModel, moi, reduction), motorModel);
+  private final DCMotorSim wristSim;
+  private final SimulatedMotorController.GenericMotorController motorController;
+  private Voltage targetVoltage;
+
+    public WristIOSim() {
+      this.wristSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(0,0), DCMotor.getKrakenX60(1));
+
+      this.motorController = new SimulatedMotorController.GenericMotorController(DCMotor.getKrakenX60(1));
+      SimulatedBattery.addElectricalAppliances(this::getSupplyCurrent);
+      wristSim.update(0.0);
   }
+
   @Override
   public void updateInputs(WristIOInputs inputs) {
-    if (DriverStation.isDisabled()) {
-      setVolts(0.0);
-    }
-
-    sim.update(0/*find a loopperiod constant number to put here eventually*/);
-    inputs.data =
-        new WristIOData(
-            sim.getAngularPositionRad(),
-            sim.getAngularVelocityRadPerSec(),
-            appliedVoltage,
-            gearbox.getCurrent(sim.getAngularVelocityRadPerSec(), appliedVoltage),
-            sim.getCurrentDrawAmps(),
-            false);
+    Angle wristPosition = Radians.of(wristSim.getAngularPositionRad()/15);
+    AngularVelocity wristVelocity = RadiansPerSecond.of(wristSim.getAngularVelocityRadPerSec()/15);
+    Voltage realVoltage = motorController.constrainOutputVoltage(wristPosition, wristVelocity, targetVoltage);
+    inputs.data = new WristIOData(wristPosition.in(Radians), wristVelocity.in(RadiansPerSecond),realVoltage.in(Volts), getSupplyCurrent().in(Amps),true);
   }
-    @Override
-    public void setVolts(double volts) {
-        appliedVoltage = MathUtil.clamp(volts, -12.0, 12.0);
-        sim.setInputVoltage(appliedVoltage);
-    }
-    @Override
-    public void setCurrent(double amps) {
-      setVolts(gearbox.getVoltage(gearbox.getTorque(amps), sim.getAngularVelocityRadPerSec()));
-    }
 
-    @Override
-    public void stop() {
-        setVolts(0.0);
-    }
+  public Current getSupplyCurrent(){
+       return Amps.of(wristSim.getCurrentDrawAmps());
+}
 }

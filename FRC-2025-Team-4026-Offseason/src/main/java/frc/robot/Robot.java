@@ -119,7 +119,9 @@ if (isReal()) {
 
   /** This function is called periodically whilst in simulation. */
   @Override
-  public void simulationPeriodic() {}
+  public void simulationPeriodic() {
+    RobotContainer.updateSimulation();
+  }
 
   public static boolean isInSimulation() {
     return !Robot.isReal();

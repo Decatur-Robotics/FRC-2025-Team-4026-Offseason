@@ -65,7 +65,6 @@ public class WristIOTalonFX implements WristIO{
                 Units.rotationsToRadians(position.getValueAsDouble()), // with reduction?
                 Units.rotationsToRadians(velocity.getValueAsDouble()),
                 appliedVolts.getValueAsDouble(),
-                torqueCurrent.getValueAsDouble(),
                 supplyCurrent.getValueAsDouble(),
 
                 BaseStatusSignal.isAllGood(

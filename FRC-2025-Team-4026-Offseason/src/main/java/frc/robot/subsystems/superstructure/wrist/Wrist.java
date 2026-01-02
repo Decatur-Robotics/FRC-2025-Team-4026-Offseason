@@ -57,10 +57,6 @@ public class Wrist extends SubsystemBase{
 
     }
 
-    public double getTorqueCurrent() {
-        return inputs.data.torqueCurrentAmps();
-    }
-
     public double getVolts() {
         return inputs.data.appliedVolts();
     }
@@ -72,7 +68,7 @@ public class Wrist extends SubsystemBase{
   
 
     public double getCurrent() {
-        return inputs.data.torqueCurrentAmps();
+        return inputs.data.supplyCurrentAmps();
     }
     
     public Command setVoltsCommand(double volts) {

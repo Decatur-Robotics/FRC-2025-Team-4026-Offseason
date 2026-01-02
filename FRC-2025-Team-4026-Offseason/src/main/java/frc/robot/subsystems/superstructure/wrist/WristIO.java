@@ -6,14 +6,13 @@ public interface WristIO {
 
     @AutoLog
     class WristIOInputs {
-        public WristIOData data = new WristIOData(0, 0, 0, 0, 0, false);
+        public WristIOData data = new WristIOData(0, 0, 0, 0, false);
     }
 
     record WristIOData(
         double positionRad,
         double velocityRadPerSec,
         double appliedVolts,
-        double torqueCurrentAmps,
         double supplyCurrentAmps,
         boolean connected
         ) {}

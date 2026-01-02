@@ -16,23 +16,40 @@ import frc.robot.subsystems.climber.ClimberIOTalonFX;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveCommands;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
+import frc.robot.subsystems.drive.GyroIOSim;
+import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
 import frc.robot.subsystems.superstructure.Superstructure;
 import frc.robot.subsystems.superstructure.arm.Arm;
+import frc.robot.subsystems.superstructure.arm.ArmIOSim;
 import frc.robot.subsystems.superstructure.arm.ArmIOTalonFX;
 import frc.robot.subsystems.superstructure.elevator.Elevator;
 import frc.robot.subsystems.superstructure.elevator.ElevatorIO;
+import frc.robot.subsystems.superstructure.elevator.ElevatorIOSim;
 import frc.robot.subsystems.superstructure.elevator.ElevatorIOTalonFX;
 import frc.robot.subsystems.superstructure.intake.Intake;
+import frc.robot.subsystems.superstructure.intake.IntakeIOSim;
 import frc.robot.subsystems.superstructure.intake.IntakeIOTalonFX;
 import frc.robot.subsystems.superstructure.wrist.Wrist;
+import frc.robot.subsystems.superstructure.wrist.WristIOSim;
 import frc.robot.subsystems.superstructure.wrist.WristIOTalonFX;
 import frc.robot.util.LogitechControllerButtons;
 
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Kilograms;
+
 import java.util.function.Supplier;
 
+import org.ironmaple.simulation.SimulatedArena;
+import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
+import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
+import org.littletonrobotics.junction.Logger;
+
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
@@ -54,6 +71,7 @@ public class RobotContainer {
   private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
   private final Drive swerve = TunerConstants.createDrivetrain();
 
+  private final SwerveDriveSimulation driveSimulation;
 
   private final Climber climber;
   private final Elevator elevator; 
@@ -72,7 +90,8 @@ public class RobotContainer {
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     instance = this;
-  
+  if(Constants.CURRENT_MODE != Constants.Mode.SIM){
+    driveSimulation = null;
     climber = new Climber( new ClimberIOTalonFX());
     elevator = new Elevator(new ElevatorIOTalonFX());
     arm = new Arm( new ArmIOTalonFX());
@@ -81,6 +100,23 @@ public class RobotContainer {
     led = new LED();
     drive = new Drive(new GyroIOPigeon2(), new ModuleIOTalonFX(TunerConstants.FrontLeft), new ModuleIOTalonFX(TunerConstants.FrontRight), new ModuleIOTalonFX(TunerConstants.BackLeft), new ModuleIOTalonFX(TunerConstants.BackRight));
     superstructure = new Superstructure(elevator, arm, intake, wrist, led);
+  }  else{
+    driveSimulation = new SwerveDriveSimulation(DriveTrainSimulationConfig.Default().withRobotMass(Kilograms.of(55)).withBumperSize(Inches.of(24), Inches.of(24)), new Pose2d(3, 3, new Rotation2d()));
+    final ModuleIOSim frontLeft = new ModuleIOSim(driveSimulation.getModules()[0]),
+        frontRight = new ModuleIOSim(driveSimulation.getModules()[1]),
+        backLeft = new ModuleIOSim(driveSimulation.getModules()[2]),
+        backRight = new ModuleIOSim(driveSimulation.getModules()[3]);
+    elevator = new Elevator(new ElevatorIOSim());
+    arm = new Arm(new ArmIOSim());
+    intake = new Intake(new IntakeIOSim(driveSimulation));
+    led = new LED();
+    climber = null;
+    wrist = new Wrist("Wrist", new WristIOSim());
+
+    drive = new Drive(new GyroIOSim(driveSimulation.getGyroSimulation()), frontLeft, frontRight, backLeft, backRight);
+    superstructure = new Superstructure(elevator, arm, intake, null, led);
+
+  }
     // Configure the trigger bindings
     configurePrimaryBindings();
     configureSecondaryBindings();
@@ -183,5 +219,16 @@ public class RobotContainer {
 
   public static RobotContainer getInstance() {
     return instance;
+}
+
+public static void updateSimulation() {
+  if (Constants.CURRENT_MODE != Constants.Mode.SIM) return;
+
+  SimulatedArena.getInstance().simulationPeriodic();
+ // Logger.recordOutput("FieldSimulation/RobotPosition", driveSimulation.getSimulatedDriveTrainPose());
+  Logger.recordOutput(
+          "FieldSimulation/Coral", SimulatedArena.getInstance().getGamePiecesArrayByType("Coral"));
+  Logger.recordOutput(
+          "FieldSimulation/Algae", SimulatedArena.getInstance().getGamePiecesArrayByType("Algae"));
 }
 }

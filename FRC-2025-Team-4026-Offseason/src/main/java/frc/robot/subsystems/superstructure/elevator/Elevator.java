@@ -8,6 +8,8 @@ import frc.robot.Constants;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 
 import org.littletonrobotics.junction.AutoLogOutput;
+
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -56,9 +58,10 @@ public class Elevator extends SubsystemBase {
     public void periodic(){
         io.updateInputs(inputs);
         Logger.processInputs("Elevator", inputs);
-         
+        Logger.recordOutput("Elevator Real Position", getPosition());
+        Logger.recordOutput("Elevator Real Voltage", getVoltage());
+        SmartDashboard.getNumber("Elevator Position", getPosition());
 
-        
     if (isEStopped) {
         io.stop();
       }
