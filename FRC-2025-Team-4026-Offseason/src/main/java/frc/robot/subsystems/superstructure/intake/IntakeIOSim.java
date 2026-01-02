@@ -1,78 +1,70 @@
 package frc.robot.subsystems.superstructure.intake;
 
-import com.ctre.phoenix6.controls.VoltageOut;
+import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Volts;
 
-import edu.wpi.first.math.MatBuilder;
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.Nat;
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.Vector;
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N2;
-import edu.wpi.first.math.system.NumericalIntegration;
-import edu.wpi.first.math.system.plant.DCMotor;
+import java.lang.annotation.Target;
+
+import org.ironmaple.simulation.IntakeSimulation;
+import org.ironmaple.simulation.drivesims.AbstractDriveTrainSimulation;
+import org.ironmaple.simulation.motorsims.SimulatedBattery;
+import org.ironmaple.simulation.motorsims.SimulatedMotorController;
+
+import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.simulation.DCMotorSim;
+import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.superstructure.elevator.Elevator;
+import frc.robot.subsystems.superstructure.elevator.ElevatorConstants;
+import frc.robot.subsystems.superstructure.intake.IntakeConstants.IntakeHardwareConstants;
 
 
 public class IntakeIOSim implements IntakeIO {
-    public static final Double armMassKG = Units.lbsToKilograms(0.42);
-    public static final DCMotor gearbox = DCMotor.getKrakenX60Foc(2).withReduction(0);
-    
-    public static final Matrix <N2, N2> simMatrix =
-    MatBuilder.fill(Nat.N2(), Nat.N2(), 0, 1, 0, -gearbox.KtNMPerAmp / (gearbox.rOhms * Math.pow(0, 0)));
-    public static final Vector<N2> simVector = VecBuilder.fill(0.0, gearbox.KtNMPerAmp/(armMassKG));
-    private Vector<N2> simState;
-    
-    private final PIDController controller = new PIDController(IntakeConstants.kP, IntakeConstants.kI, IntakeConstants.kD);
-    private boolean closedLoop = false;
-    private double feedforward = 0.0;
-
-    public IntakeIOSim(){
-        simState = VecBuilder.fill(0.0, 0.0);
+    private final IntakeSimulation intakeSim;
+    private Voltage targetVoltage;
+    private static IntakeHardwareConstants hardwareConstants = IntakeConstants.HARDWARE_CONSTANTS;
+    private final SimulatedMotorController.GenericMotorController motorController;
+    private final DCMotorSim leftMotorSim, rightMotorSim;
+    public IntakeIOSim(AbstractDriveTrainSimulation driveSim){
+        this.intakeSim = IntakeSimulation.OverTheBumperIntake("Coral", driveSim,
+        hardwareConstants.INTAKE_WIDTH(), hardwareConstants.INTAKE_MAX_EXTENSION(), IntakeSimulation.IntakeSide.FRONT, 1
+        );
+        this.targetVoltage = Volts.zero();
+        this.leftMotorSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(0.1, 0), hardwareConstants.INTAKE_GEARBOX());
+        this.rightMotorSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(0.1, 0), hardwareConstants.INTAKE_GEARBOX());
+        this.motorController = new SimulatedMotorController.GenericMotorController(hardwareConstants.INTAKE_GEARBOX());
+        SimulatedBattery.addElectricalAppliances(this::getSupplyCurrent);
     }
 
-    @Override
-    public void updateInputs(IntakeIOInputs inputs){
-        if (!closedLoop) {
-            controller.reset();
+    public void setVoltage(Voltage voltage){
+        this.targetVoltage = voltage;
+        if(targetVoltage.in(Volts) > 0){
+            intakeSim.startIntake();
         }
-        inputs.intakeData = new IntakeIOData(
-        true,
-        true,
-        0.0,
-        simState.get(1),
-        0.0,
-        simState.get(1)
-    );
-
+        else{
+            intakeSim.stopIntake();
+        }
     }
 
-
-
-    public void runOpenLoop(double output){
-        closedLoop = false;
-    }
-     
-    public void stop(){
-        runOpenLoop(feedforward);
+    public void updateInputs(IntakeIOInputs inputs){
+        Angle intakeAngle = Radians.of(leftMotorSim.getAngularPositionRad());
+        AngularVelocity intakeAngularVelocity = RadiansPerSecond.of(leftMotorSim.getAngularVelocityRadPerSec());
+        Voltage realVoltage = motorController.constrainOutputVoltage(intakeAngle, intakeAngularVelocity, targetVoltage);
+        realVoltage = SimulatedBattery.clamp(realVoltage);
+        inputs.intakeData = new IntakeIOData(true, true, realVoltage.in(Volts), intakeAngularVelocity.in(RadiansPerSecond), realVoltage.in(Volts), intakeAngularVelocity.in(RadiansPerSecond));
     }
 
-    public void setPID(double kP, double kI, double kD){
-        controller.setPID(kP,kI,kD);
+    public Current getSupplyCurrent(){
+         return Amps.of(leftMotorSim.getCurrentDrawAmps() + rightMotorSim.getCurrentDrawAmps());
+     }
+
+    public void setVoltage(double voltage){
+        this.targetVoltage = Volts.of(voltage);
     }
-    
-    // public void update(double dt) {
-    //     Matrix<N2, N1> updatedState = NumericalIntegration.rkdp((Matrix<N1,N1> x, Matrix<N2,N1> u) -> simMatrix.times(x).plus(B.times(u).plus(VecBuilder.fill(0,0))), simState, MatBuilder.fill(Nat.N1(),Nat.N1()), dt);
-    //     simState = VecBuilder.fill(updatedState.get(0,0), updatedState.get(1,0));
-    //     if (simState.get(0) <=0) {
-    //         simState.set(1,0,0);
-    //         simState.set(0,0,0);
-    //     }
-    //     if (simState.get(0) >=0.762) {
-    //         simState.set(1,0,0);
-    //         simState.set(0,0,0.762);
-    //     }
-    // }
 }

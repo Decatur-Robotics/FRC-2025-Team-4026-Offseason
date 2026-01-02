@@ -1,5 +1,11 @@
 package frc.robot.subsystems.superstructure.intake;
 
+import static edu.wpi.first.units.Units.Kilograms;
+import static edu.wpi.first.units.Units.Meters;
+
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.units.measure.*;
+
 public class IntakeConstants {
 
     public static final double kP = 0.05;
@@ -22,4 +28,21 @@ public class IntakeConstants {
 
     public static final double CORAL_STALL_DEBOUNCE_TIME = 0.1;
     public static final int CORAL_STALL_CURRENT = 50;
+
+    public record IntakeHardwareConstants(
+        Distance INTAKE_WIDTH,
+        Mass INTAKE_MASS,
+        Distance INTAKE_MAX_EXTENSION,
+        DCMotor INTAKE_GEARBOX,
+        double INTAKE_GEARING_REDUCTION
+    ) {
+    }
+
+    public static final IntakeHardwareConstants HARDWARE_CONSTANTS = new IntakeHardwareConstants(
+        Distance.ofBaseUnits(0.1, Meters),
+        Mass.ofBaseUnits(3, Kilograms),
+        Distance.ofBaseUnits(0.2, Meters),
+        DCMotor.getKrakenX60Foc(2),
+        10.0
+    );
 }
