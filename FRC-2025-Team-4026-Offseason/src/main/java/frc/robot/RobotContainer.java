@@ -7,6 +7,7 @@ package frc.robot;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.Autos;
 import frc.robot.commands.ExampleCommand;
+import frc.robot.core.Autonomous;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.LEDs.LED;
@@ -73,6 +74,8 @@ public class RobotContainer {
 
   private final SwerveDriveSimulation driveSimulation;
 
+  private Autonomous auto;
+
   private final Climber climber;
   private final Elevator elevator; 
   private final Arm arm;
@@ -100,6 +103,7 @@ public class RobotContainer {
     led = new LED();
     drive = new Drive(new GyroIOPigeon2(), new ModuleIOTalonFX(TunerConstants.FrontLeft), new ModuleIOTalonFX(TunerConstants.FrontRight), new ModuleIOTalonFX(TunerConstants.BackLeft), new ModuleIOTalonFX(TunerConstants.BackRight), (pose) -> {});
     superstructure = new Superstructure(elevator, arm, intake, wrist, led);
+    auto = new Autonomous(this);
   }  else{
     driveSimulation = new SwerveDriveSimulation(DriveTrainSimulationConfig.Default().withRobotMass(Kilograms.of(55)).withBumperSize(Inches.of(24), Inches.of(24)), new Pose2d(3, 3, new Rotation2d()));
     final ModuleIOSim frontLeft = new ModuleIOSim(driveSimulation.getModules()[0]),
@@ -115,6 +119,7 @@ public class RobotContainer {
 
     drive = new Drive(new GyroIOSim(driveSimulation.getGyroSimulation()), frontLeft, frontRight, backLeft, backRight, driveSimulation::setSimulationWorldPose);
     superstructure = new Superstructure(elevator, arm, intake, wrist, led);
+    auto = new Autonomous(this);
 
   }
     // Configure the trigger bindings
@@ -220,6 +225,10 @@ public class RobotContainer {
 
   public static RobotContainer getInstance() {
     return instance;
+}
+
+public Superstructure getSuperstructure() {
+  return superstructure;
 }
 
 public void resetSimulationField(){
