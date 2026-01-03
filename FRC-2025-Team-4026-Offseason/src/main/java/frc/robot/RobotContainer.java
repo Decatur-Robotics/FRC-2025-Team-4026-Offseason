@@ -45,6 +45,7 @@ import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.inputs.LoggedPowerDistribution;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -52,6 +53,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
@@ -106,6 +108,7 @@ public class RobotContainer {
     auto = new Autonomous(this);
   }  else{
     driveSimulation = new SwerveDriveSimulation(DriveTrainSimulationConfig.Default().withRobotMass(Kilograms.of(55)).withBumperSize(Inches.of(24), Inches.of(24)), new Pose2d(3, 3, new Rotation2d()));
+    SimulatedArena.getInstance().addDriveTrainSimulation(driveSimulation);
     final ModuleIOSim frontLeft = new ModuleIOSim(driveSimulation.getModules()[0]),
         frontRight = new ModuleIOSim(driveSimulation.getModules()[1]),
         backLeft = new ModuleIOSim(driveSimulation.getModules()[2]),
@@ -166,6 +169,11 @@ public class RobotContainer {
         ()-> joystick.getTwist()
     ));
 
+    final Runnable resetGyro = Constants.CURRENT_MODE == Constants.Mode.SIM ? () -> drive.setPose(
+      driveSimulation.getSimulatedDriveTrainPose()) // reset odometry to actual robot pose during
+// simulation
+: () -> drive.setPose(new Pose2d(drive.getPose().getTranslation(), new Rotation2d())); // zero gyro
+    bumperLeft.onTrue(Commands.runOnce(resetGyro, drive));
     
 
     // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,

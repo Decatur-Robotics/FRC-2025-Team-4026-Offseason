@@ -77,6 +77,7 @@ public class ModuleIOSim implements ModuleIO {
 
     inputs.odometryDrivePositionsRad = Arrays.stream(moduleSim.getCachedDriveWheelFinalPositions()).mapToDouble(Angle -> Angle.in(Radians)).toArray();
     inputs.odometryTurnPositions = moduleSim.getCachedSteerAbsolutePositions();
+    inputs.odometryTimestamps = PhoenixUtil.getSimulationOdometryTimeStamps();
   }
 
   public void runControlLoops() {
