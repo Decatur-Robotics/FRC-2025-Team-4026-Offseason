@@ -37,13 +37,20 @@ public class Superstructure {
         led.setAllPixels(LEDConstants.BLUE);
     }
 
-    public void setState(SuperstructureState targetState) {
+    public Command setState(SuperstructureState targetState) {
         this.targetState = targetState.copyInstance();
 
-        elevator.setPositionCommand(targetState.elevatorPosition);
-        arm.setPositionCommand(targetState.armPosition);
-        wrist.setVoltsCommand(targetState.wristCurrent);
-        intake.setVelocityCommand(targetState.intakeVelocity);
+        // elevator.setPositionCommand(targetState.elevatorPosition);
+        // arm.setPositionCommand(targetState.armPosition);
+        // wrist.setVoltsCommand(targetState.wristCurrent);
+        // intake.setVelocityCommand(targetState.intakeVelocity);
+
+        return Commands.parallel(
+            elevator.setPositionCommand(targetState.elevatorPosition),
+            arm.setPositionCommand(targetState.armPosition),
+            wrist.setVoltsCommand(targetState.wristCurrent),
+            intake.setVelocityCommand(targetState.intakeVelocity)
+        );
     }
 
     // Is at targets
@@ -234,13 +241,15 @@ public Command scoreEjectCommand(SuperstructureState stagingState, Superstructur
         return Commands.sequence(
             Commands.waitUntil(() -> (isNearTargetPose.get() || overrideNearPose.get())),
             Commands.runOnce(() -> setState(stagingState),
-                elevator, arm, wrist, intake),
+                elevator, arm, wrist, intake
+                ),
             Commands.waitUntil(() -> (isAtTargetState() && isAtTargetPose.get()) || overrideAtPose.get()),
             Commands.run(() -> {
                 setState(ejectingState);
                 led.flashAllPixels(LEDConstants.YELLOW, 5);
             },
-                elevator, arm, wrist, intake, led)
+                elevator, arm, wrist, intake, led
+                )
         )
         .finallyDo(() -> {
             setState(stowedState);

@@ -69,6 +69,7 @@ public class ModuleIOSim implements ModuleIO {
     inputs.driveCurrentAmps = moduleSim.getDriveMotorStatorCurrent().in(Amps);
 
     inputs.turnConnected = true;
+    inputs.turnEncoderConnected = true;
     inputs.turnAbsolutePosition = moduleSim.getSteerAbsoluteFacing();
     inputs.turnVelocityRadPerSec = moduleSim.getSteerAbsoluteEncoderSpeed().in(RadiansPerSecond);
     inputs.turnAppliedVolts = moduleSim.getSteerMotorAppliedVoltage().in(Volts);

@@ -69,7 +69,7 @@ public class RobotContainer {
   private static RobotContainer instance;
   // The robot's subsystems and commands are defined here...
   private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
-  private final Drive swerve = TunerConstants.createDrivetrain();
+ // private final Drive swerve = TunerConstants.createDrivetrain();
 
   private final SwerveDriveSimulation driveSimulation;
 
@@ -98,7 +98,7 @@ public class RobotContainer {
     intake = new Intake(new IntakeIOTalonFX());
     wrist = new Wrist("Wrist", new WristIOTalonFX());
     led = new LED();
-    drive = new Drive(new GyroIOPigeon2(), new ModuleIOTalonFX(TunerConstants.FrontLeft), new ModuleIOTalonFX(TunerConstants.FrontRight), new ModuleIOTalonFX(TunerConstants.BackLeft), new ModuleIOTalonFX(TunerConstants.BackRight));
+    drive = new Drive(new GyroIOPigeon2(), new ModuleIOTalonFX(TunerConstants.FrontLeft), new ModuleIOTalonFX(TunerConstants.FrontRight), new ModuleIOTalonFX(TunerConstants.BackLeft), new ModuleIOTalonFX(TunerConstants.BackRight), (pose) -> {});
     superstructure = new Superstructure(elevator, arm, intake, wrist, led);
   }  else{
     driveSimulation = new SwerveDriveSimulation(DriveTrainSimulationConfig.Default().withRobotMass(Kilograms.of(55)).withBumperSize(Inches.of(24), Inches.of(24)), new Pose2d(3, 3, new Rotation2d()));
@@ -113,8 +113,8 @@ public class RobotContainer {
     climber = null;
     wrist = new Wrist("Wrist", new WristIOSim());
 
-    drive = new Drive(new GyroIOSim(driveSimulation.getGyroSimulation()), frontLeft, frontRight, backLeft, backRight);
-    superstructure = new Superstructure(elevator, arm, intake, null, led);
+    drive = new Drive(new GyroIOSim(driveSimulation.getGyroSimulation()), frontLeft, frontRight, backLeft, backRight, driveSimulation::setSimulationWorldPose);
+    superstructure = new Superstructure(elevator, arm, intake, wrist, led);
 
   }
     // Configure the trigger bindings
@@ -165,7 +165,7 @@ public class RobotContainer {
 
     // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
     // cancelling on release.
-    m_driverController.b().whileTrue(m_exampleSubsystem.exampleMethodCommand());
+    //m_driverController.b().whileTrue(m_exampleSubsystem.exampleMethodCommand());
   }
   private void configureSecondaryBindings() {
 
@@ -183,9 +183,10 @@ public class RobotContainer {
         JoystickButton triggerRight = new JoystickButton(joystick, LogitechControllerButtons.triggerRight);
         JoystickButton bumperLeft = new JoystickButton(joystick, LogitechControllerButtons.bumperLeft);
         JoystickButton bumperRight = new JoystickButton(joystick, LogitechControllerButtons.bumperRight);
+        JoystickButton start = new JoystickButton(joystick, LogitechControllerButtons.start);
 
-        Supplier<Boolean> overrideAtPose = () -> true;
-        Supplier<Boolean> overrideNearPose = () -> true;
+        Supplier<Boolean> overrideAtPose = () -> new JoystickButton(new Joystick(0), LogitechControllerButtons.b).getAsBoolean();
+        Supplier<Boolean> overrideNearPose = () -> start.getAsBoolean();
         Supplier<Boolean> isNearAligned = () -> true;
         Supplier<Boolean> isAligned = ()-> true;
 
@@ -214,18 +215,25 @@ public class RobotContainer {
   }
 
   public Drive getSwerve() {
-    return swerve;
+    return drive;
 }
 
   public static RobotContainer getInstance() {
     return instance;
 }
 
-public static void updateSimulation() {
+public void resetSimulationField(){
+  if(Constants.CURRENT_MODE != Constants.Mode.SIM) return;
+
+  driveSimulation.setSimulationWorldPose(new Pose2d(3, 3, new Rotation2d()));
+  SimulatedArena.getInstance().resetFieldForAuto();
+}
+
+public void updateSimulation() {
   if (Constants.CURRENT_MODE != Constants.Mode.SIM) return;
 
   SimulatedArena.getInstance().simulationPeriodic();
- // Logger.recordOutput("FieldSimulation/RobotPosition", driveSimulation.getSimulatedDriveTrainPose());
+  Logger.recordOutput("FieldSimulation/RobotPosition", driveSimulation.getSimulatedDriveTrainPose());
   Logger.recordOutput(
           "FieldSimulation/Coral", SimulatedArena.getInstance().getGamePiecesArrayByType("Coral"));
   Logger.recordOutput(

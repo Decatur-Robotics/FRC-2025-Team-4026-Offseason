@@ -48,7 +48,7 @@ public class ElevatorIOSim implements ElevatorIO {
 
     public ElevatorIOSim() {
         this.drumCircumference = hardwareConstants.ELEVATOR_DRUM_WHEEL_TEETH()*hardwareConstants.CHAIN_LENGTH().in(Meters);
-        this.elevatorSim = new ElevatorSim(hardwareConstants.ELEVATOR_GEARBOX(), hardwareConstants.ELEVATOR_GEARING_REDUCTION(), hardwareConstants.ELEVATOR_CARRIAGE_WEIGHT().in(Kilograms), 0.0, 0, hardwareConstants.ELEVATOR_MAX_HEIGHT().in(Meters), true, 0);
+        this.elevatorSim = new ElevatorSim(hardwareConstants.ELEVATOR_GEARBOX(), hardwareConstants.ELEVATOR_GEARING_REDUCTION(), hardwareConstants.ELEVATOR_CARRIAGE_WEIGHT().in(Kilograms), drumCircumference/(2*Math.PI), 0, hardwareConstants.ELEVATOR_MAX_HEIGHT().in(Meters), true, 0);
 
         this.motorController = new SimulatedMotorController.GenericMotorController(hardwareConstants.ELEVATOR_GEARBOX());
         motorController.withCurrentLimit(ElevatorConstants.STATOR_CURRENT_LIMIT);

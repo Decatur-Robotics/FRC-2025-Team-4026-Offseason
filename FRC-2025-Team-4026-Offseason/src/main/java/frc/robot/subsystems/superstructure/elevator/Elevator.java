@@ -70,13 +70,13 @@ public class Elevator extends SubsystemBase {
 
     public void setVoltage(double voltage){
         this.voltage = voltage;
-        mainMotor.mainMotor.setVoltage(voltage);
+        io.setVoltage(voltage);
     }
 
     
 
     public Command setVoltageCommand(double voltage){
-        return Commands.runOnce(() -> setVoltage(voltage));
+        return Commands.runOnce(() -> io.setVoltage(voltage));
     }
 
     public Command setPositionCommand(double position){

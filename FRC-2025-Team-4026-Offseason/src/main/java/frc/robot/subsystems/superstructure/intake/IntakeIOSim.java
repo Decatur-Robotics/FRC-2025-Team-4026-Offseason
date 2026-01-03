@@ -36,8 +36,8 @@ public class IntakeIOSim implements IntakeIO {
         hardwareConstants.INTAKE_WIDTH(), hardwareConstants.INTAKE_MAX_EXTENSION(), IntakeSimulation.IntakeSide.FRONT, 1
         );
         this.targetVoltage = Volts.zero();
-        this.leftMotorSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(0.1, 0), hardwareConstants.INTAKE_GEARBOX());
-        this.rightMotorSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(0.1, 0), hardwareConstants.INTAKE_GEARBOX());
+        this.leftMotorSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(0.1, 0.01), hardwareConstants.INTAKE_GEARBOX());
+        this.rightMotorSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(0.1, 0.01), hardwareConstants.INTAKE_GEARBOX());
         this.motorController = new SimulatedMotorController.GenericMotorController(hardwareConstants.INTAKE_GEARBOX());
         SimulatedBattery.addElectricalAppliances(this::getSupplyCurrent);
     }

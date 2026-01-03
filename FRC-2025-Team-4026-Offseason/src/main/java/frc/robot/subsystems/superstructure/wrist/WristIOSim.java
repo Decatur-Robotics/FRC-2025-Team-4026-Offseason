@@ -29,8 +29,8 @@ public class WristIOSim implements WristIO {
   private Voltage targetVoltage;
 
     public WristIOSim() {
-      this.wristSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(0,0), DCMotor.getKrakenX60(1));
-
+      this.wristSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(0.05,0.01), DCMotor.getKrakenX60(1));
+      this.targetVoltage = Volts.zero();
       this.motorController = new SimulatedMotorController.GenericMotorController(DCMotor.getKrakenX60(1));
       SimulatedBattery.addElectricalAppliances(this::getSupplyCurrent);
       wristSim.update(0.0);

@@ -9,7 +9,7 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 
 public class LED implements Subsystem{
    /** An LED strip */
-	private AddressableLED led;
+	private static AddressableLED led = null;
 	/** A buffer with data on the LED strip states */
 	private AddressableLEDBuffer buffer;
 
