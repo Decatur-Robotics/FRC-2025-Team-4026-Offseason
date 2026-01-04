@@ -37,19 +37,25 @@ import frc.robot.subsystems.superstructure.wrist.WristIOTalonFX;
 import frc.robot.util.LogitechControllerButtons;
 
 import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Kilograms;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Volt;
+import static edu.wpi.first.units.Units.Volts;
 
 import java.util.function.Supplier;
 
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
+import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.inputs.LoggedPowerDistribution;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -107,7 +113,7 @@ public class RobotContainer {
     superstructure = new Superstructure(elevator, arm, intake, wrist, led);
     auto = new Autonomous(this);
   }  else{
-    driveSimulation = new SwerveDriveSimulation(DriveTrainSimulationConfig.Default().withRobotMass(Kilograms.of(55)).withBumperSize(Inches.of(24), Inches.of(24)), new Pose2d(3, 3, new Rotation2d()));
+    driveSimulation = new SwerveDriveSimulation(Drive.mapleSimConfig, new Pose2d(3,3,new Rotation2d()));
     SimulatedArena.getInstance().addDriveTrainSimulation(driveSimulation);
     final ModuleIOSim frontLeft = new ModuleIOSim(driveSimulation.getModules()[0]),
         frontRight = new ModuleIOSim(driveSimulation.getModules()[1]),
