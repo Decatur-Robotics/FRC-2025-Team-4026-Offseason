@@ -67,10 +67,8 @@ public class ModuleIOSim implements ModuleIO {
 
       this.driveController = new PIDController(0.05, 0.0, 0.0);
 
-      //This PID controller wants humanity dead, it does not do what you want it to do,
-      // it will either do nothing or cause the robot to become like the dvd screensaver going around the field, 
-      //and you cannot e-stop it, it just keeps going until it causes the battery to explode
-      this.turnController = new PIDController(.25, 0.0, 1.5);
+      //Low p acts like high and low p at the same time
+      this.turnController = new PIDController(100, 0, .5);
 
       // Enable wrapping for turn PID
       turnController.enableContinuousInput(-Math.PI, Math.PI);

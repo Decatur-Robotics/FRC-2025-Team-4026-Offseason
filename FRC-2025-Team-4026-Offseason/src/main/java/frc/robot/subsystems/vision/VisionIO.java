@@ -34,4 +34,6 @@ public interface VisionIO {
             }
 
         record TargetObservation(Rotation2d tx, Rotation2d ty) {}
+
+        default void updateInputs(VisionIOInputs inputs) {}
 }
