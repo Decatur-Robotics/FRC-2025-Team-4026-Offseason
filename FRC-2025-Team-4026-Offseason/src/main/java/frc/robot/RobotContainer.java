@@ -20,6 +20,7 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.GyroIOSim;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
+import frc.robot.subsystems.drive.ModuleIOTalonFXReal;
 import frc.robot.subsystems.superstructure.Superstructure;
 import frc.robot.subsystems.superstructure.arm.Arm;
 import frc.robot.subsystems.superstructure.arm.ArmIOSim;
@@ -109,16 +110,16 @@ public class RobotContainer {
     intake = new Intake(new IntakeIOTalonFX());
     wrist = new Wrist("Wrist", new WristIOTalonFX());
     led = new LED();
-    drive = new Drive(new GyroIOPigeon2(), new ModuleIOTalonFX(TunerConstants.FrontLeft), new ModuleIOTalonFX(TunerConstants.FrontRight), new ModuleIOTalonFX(TunerConstants.BackLeft), new ModuleIOTalonFX(TunerConstants.BackRight), (pose) -> {});
+    drive = new Drive(new GyroIOPigeon2(), new ModuleIOTalonFXReal(TunerConstants.FrontLeft), new ModuleIOTalonFXReal(TunerConstants.FrontRight), new ModuleIOTalonFXReal(TunerConstants.BackLeft), new ModuleIOTalonFXReal(TunerConstants.BackRight), (pose) -> {});
     superstructure = new Superstructure(elevator, arm, intake, wrist, led);
     auto = new Autonomous(this);
   }  else{
     driveSimulation = new SwerveDriveSimulation(Drive.mapleSimConfig, new Pose2d(3,3,new Rotation2d()));
     SimulatedArena.getInstance().addDriveTrainSimulation(driveSimulation);
-    final ModuleIOSim frontLeft = new ModuleIOSim(driveSimulation.getModules()[0]),
-        frontRight = new ModuleIOSim(driveSimulation.getModules()[1]),
-        backLeft = new ModuleIOSim(driveSimulation.getModules()[2]),
-        backRight = new ModuleIOSim(driveSimulation.getModules()[3]);
+    final ModuleIOSim frontLeft = new ModuleIOSim(TunerConstants.FrontLeft, driveSimulation.getModules()[0]),
+        frontRight = new ModuleIOSim(TunerConstants.FrontRight, driveSimulation.getModules()[1]),
+        backLeft = new ModuleIOSim(TunerConstants.BackLeft, driveSimulation.getModules()[2]),
+        backRight = new ModuleIOSim(TunerConstants.BackRight, driveSimulation.getModules()[3]);
     elevator = new Elevator(new ElevatorIOSim());
     arm = new Arm(new ArmIOSim());
     intake = new Intake(new IntakeIOSim(driveSimulation));
@@ -214,7 +215,8 @@ public class RobotContainer {
         left.whileTrue(superstructure.scoreCoralL3Command(isNearAligned, isAligned, overrideNearPose, overrideAtPose));
         up.whileTrue(superstructure.scoreCoralL4Command(isNearAligned, isAligned, overrideNearPose, overrideAtPose));
 
-        a.whileTrue(superstructure.intakeCoralGroundCommand());
+        //a.whileTrue(superstructure.intakeCoralGroundCommand());
+        a.whileTrue(elevator.setPositionCommand(100));
         b.whileTrue(superstructure.intakeCoralHumanPlayerCommand());
         x.whileTrue(superstructure.dealgifyLowCommand());
         y.whileTrue(superstructure.dealgifyHighCommand());

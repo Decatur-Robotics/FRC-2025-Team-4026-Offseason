@@ -10,8 +10,10 @@ package frc.robot.util;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
+import com.ctre.phoenix6.sim.CANcoderSimState;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 
@@ -135,4 +137,13 @@ public static SwerveModuleConstants regulateModuleConstantForSimulation(
                 // Adjust steer inertia
                 .withSteerInertia(KilogramSquareMeters.of(0.05));
     }
+
+        public static class TalonFXMotorControllerWithRemoteCancoderSim extends TalonFXMotorControllerSim {
+        private final CANcoderSimState remoteCancoderSimState;
+
+        public TalonFXMotorControllerWithRemoteCancoderSim(TalonFX talonFX, CANcoder cancoder) {
+            super(talonFX);
+            this.remoteCancoderSimState = cancoder.getSimState();
+        }
+      }
 }

@@ -91,6 +91,9 @@ public class ElevatorIOSim implements ElevatorIO {
         this.targetVoltage = Volts.of(voltage);
     }
 
+    public void setPosition(double position){
+        elevatorSim.setState(position, 0.0);
+    }
 
 
 
