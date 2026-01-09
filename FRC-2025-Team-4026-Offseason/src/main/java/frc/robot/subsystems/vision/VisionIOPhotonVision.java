@@ -12,28 +12,24 @@ import edu.wpi.first.math.geometry.Transform3d;
 import static frc.robot.subsystems.vision.VisionConstants.aprilTagLayout;
 
 public class VisionIOPhotonVision implements VisionIO {
-    protected final PhotonCamera leftCamera;
-    protected final PhotonCamera rightCamera;
+    protected final PhotonCamera camera;
 
-    protected final Transform3d leftCameraToRobot;
-    protected final Transform3d rightCameraToRobot;
+    protected final Transform3d cameraToRobot;
 
     TargetObservation targetObservation;
     public VisionIOPhotonVision(
-        Transform3d leftCameraToRobot,
-        Transform3d rightCameraToRobot
+        Transform3d cameraToRobot,
+        String cameraName
     ) {
-        this.leftCamera = new PhotonCamera(VisionConstants.CAMERA_FRONT_LEFT_NAME);
-        this.rightCamera = new PhotonCamera(VisionConstants.CAMERA_FRONT_RIGHT_NAME);
-        this.leftCameraToRobot = leftCameraToRobot;
-        this.rightCameraToRobot = rightCameraToRobot;
+        this.camera = new PhotonCamera(cameraName);
+        this.cameraToRobot = cameraToRobot;
     }
 
     @Override
     public void updateInputs(VisionIOInputs inputs) {
         Set<Short> aprilTagIds = new HashSet<>();
         List<PoseObservation> poseObservations = new java.util.ArrayList<>();
-        for(var result : leftCamera.getAllUnreadResults()){
+        for(var result : camera.getAllUnreadResults()){
             if(result.hasTargets()){
                 targetObservation = new TargetObservation(
                     Rotation2d.fromDegrees(result.getBestTarget().getYaw()),
@@ -48,7 +44,7 @@ public class VisionIOPhotonVision implements VisionIO {
                 var multitagResult = result.multitagResult.get();
 
                 Transform3d fieldToCamera = multitagResult.estimatedPose.best;
-                Transform3d fieldToRobot = fieldToCamera.plus(leftCameraToRobot.inverse());
+                Transform3d fieldToRobot = fieldToCamera.plus(cameraToRobot.inverse());
                 Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
 
                 double totalTagDistance = 0.0;
@@ -74,7 +70,7 @@ public class VisionIOPhotonVision implements VisionIO {
                             tagPose.get().getTranslation(), tagPose.get().getRotation());
                     Transform3d cameraToTarget = target.bestCameraToTarget;
                     Transform3d fieldToCamera = fieldToTarget.plus(cameraToTarget.inverse());
-                    Transform3d fieldToRobot = fieldToCamera.plus(leftCameraToRobot.inverse());
+                    Transform3d fieldToRobot = fieldToCamera.plus(cameraToRobot.inverse());
                     Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
 
                     // Add tag ID
@@ -101,7 +97,7 @@ public class VisionIOPhotonVision implements VisionIO {
         for(int id : aprilTagIds){
             aprilTagIdArray[i++] = id;
         }
-        inputs.visionData = new VisionIOData(leftCamera.isConnected(), rightCamera.isConnected(), targetObservation, poseObservationArray, aprilTagIdArray);
+        inputs.visionData = new VisionIOData(camera.isConnected(), targetObservation, poseObservationArray, aprilTagIdArray);
 
     }
 }

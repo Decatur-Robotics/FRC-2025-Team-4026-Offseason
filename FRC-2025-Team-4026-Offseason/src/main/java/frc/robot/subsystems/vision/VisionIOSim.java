@@ -15,15 +15,16 @@ public class VisionIOSim extends VisionIOPhotonVision{
     private static VisionSystemSim visionSim;
 
     private Supplier<Pose2d> poseSupplier;
-    private PhotonCameraSim leftCameraSim;
+    private PhotonCameraSim cameraSim;
     private PhotonCameraSim rightCameraSim;
 
     public VisionIOSim(
-        Transform3d leftCameraToRobot,
-        Transform3d rightCameraToRobot,
+        Transform3d cameraToRobot,
+        String cameraName,
         Supplier<Pose2d> poseSupplier
     ) {
-        super(leftCameraToRobot, rightCameraToRobot);
+        super(cameraToRobot,
+        cameraName);
         this.poseSupplier = poseSupplier;
 
        if (visionSim == null) {
@@ -32,13 +33,10 @@ public class VisionIOSim extends VisionIOPhotonVision{
 
         }
 
-        var leftCameraProperties = new SimCameraProperties();
-        var rightCameraProperties = new SimCameraProperties();
+        var cameraProperties = new SimCameraProperties();
 
-        leftCameraSim = new PhotonCameraSim(leftCamera, leftCameraProperties);
-        rightCameraSim = new PhotonCameraSim(rightCamera, rightCameraProperties);
-        visionSim.addCamera(leftCameraSim, leftCameraToRobot);
-        visionSim.addCamera(rightCameraSim, rightCameraToRobot);
+        cameraSim = new PhotonCameraSim(camera, cameraProperties);
+        visionSim.addCamera(cameraSim, cameraToRobot);
 
        }
 

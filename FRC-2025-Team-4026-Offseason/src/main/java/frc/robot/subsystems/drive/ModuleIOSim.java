@@ -65,10 +65,10 @@ public class ModuleIOSim implements ModuleIO {
               .withCurrentLimit(Amps.of(TunerConstants.FrontLeft.SlipCurrent));
       this.turnMotor = moduleSimulation.useGenericControllerForSteer().withCurrentLimit(Amps.of(20));
 
-      this.driveController = new PIDController(0.05, 0.0, 0.0);
+      this.driveController = new PIDController(0.1, 0.0, 0.0);
 
       //Low p acts like high and low p at the same time
-      this.turnController = new PIDController(100, 0, .5);
+      this.turnController = new PIDController(100, 0, 1.0);
 
       // Enable wrapping for turn PID
       turnController.enableContinuousInput(-Math.PI, Math.PI);

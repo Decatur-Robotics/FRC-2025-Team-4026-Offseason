@@ -34,6 +34,10 @@ import frc.robot.subsystems.superstructure.intake.IntakeIOTalonFX;
 import frc.robot.subsystems.superstructure.wrist.Wrist;
 import frc.robot.subsystems.superstructure.wrist.WristIOSim;
 import frc.robot.subsystems.superstructure.wrist.WristIOTalonFX;
+import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.vision.VisionConstants;
+import frc.robot.subsystems.vision.VisionIOPhotonVision;
+import frc.robot.subsystems.vision.VisionIOSim;
 import frc.robot.util.LogitechControllerButtons;
 
 import static edu.wpi.first.units.Units.Inches;
@@ -52,8 +56,14 @@ import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.inputs.LoggedPowerDistribution;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.util.PathPlannerLogging;
+
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.Joystick;
@@ -91,6 +101,7 @@ public class RobotContainer {
   private final Wrist wrist;
   private final LED led;
   private final Drive drive;
+  private Vision vision;
 
   private final Superstructure superstructure;
 
@@ -101,6 +112,7 @@ public class RobotContainer {
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     instance = this;
+    
   if(Constants.CURRENT_MODE != Constants.Mode.SIM){
     driveSimulation = null;
     climber = new Climber( new ClimberIOTalonFX());
@@ -112,6 +124,11 @@ public class RobotContainer {
     drive = new Drive(new GyroIOPigeon2(), new ModuleIOTalonFX(TunerConstants.FrontLeft), new ModuleIOTalonFX(TunerConstants.FrontRight), new ModuleIOTalonFX(TunerConstants.BackLeft), new ModuleIOTalonFX(TunerConstants.BackRight), (pose) -> {});
     superstructure = new Superstructure(elevator, arm, intake, wrist, led);
     auto = new Autonomous(this);
+    vision = new Vision(
+      drive,
+      new VisionIOPhotonVision(VisionConstants.ROBOT_TO_CAMERA_FRONT_LEFT, VisionConstants.CAMERA_FRONT_LEFT_NAME)
+      , new VisionIOPhotonVision(VisionConstants.ROBOT_TO_CAMERA_FRONT_RIGHT, VisionConstants.CAMERA_FRONT_RIGHT_NAME))
+           ;
   }  else{
     driveSimulation = new SwerveDriveSimulation(Drive.mapleSimConfig, new Pose2d(3,3,new Rotation2d()));
     SimulatedArena.getInstance().addDriveTrainSimulation(driveSimulation);
@@ -129,6 +146,12 @@ public class RobotContainer {
     drive = new Drive(new GyroIOSim(driveSimulation.getGyroSimulation()), frontLeft, frontRight, backLeft, backRight, driveSimulation::setSimulationWorldPose);
     superstructure = new Superstructure(elevator, arm, intake, wrist, led);
     auto = new Autonomous(this);
+
+     vision = new Vision(
+      drive,
+      new VisionIOSim(VisionConstants.ROBOT_TO_CAMERA_FRONT_LEFT, VisionConstants.CAMERA_FRONT_LEFT_NAME, driveSimulation::getSimulatedDriveTrainPose)
+      , new VisionIOSim(VisionConstants.ROBOT_TO_CAMERA_FRONT_RIGHT, VisionConstants.CAMERA_FRONT_RIGHT_NAME, driveSimulation::getSimulatedDriveTrainPose))
+           ;
 
   }
     // Configure the trigger bindings
@@ -230,7 +253,8 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
-    return Autos.exampleAuto(m_exampleSubsystem);
+    return auto.getAutoCommand();
+   // return AutoBuilder.pathfindToPose(new Pose2d(1, 3.5, new Rotation2d()), PathConstraints.unlimitedConstraints(12));
   }
 
   public Drive getSwerve() {
