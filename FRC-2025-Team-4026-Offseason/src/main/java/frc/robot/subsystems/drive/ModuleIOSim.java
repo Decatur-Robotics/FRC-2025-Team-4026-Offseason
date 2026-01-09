@@ -67,7 +67,6 @@ public class ModuleIOSim implements ModuleIO {
 
       this.driveController = new PIDController(0.1, 0.0, 0.0);
 
-      //Low p acts like high and low p at the same time
       this.turnController = new PIDController(100, 0, 1.0);
 
       // Enable wrapping for turn PID

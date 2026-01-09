@@ -123,7 +123,7 @@ public class RobotContainer {
     led = new LED();
     drive = new Drive(new GyroIOPigeon2(), new ModuleIOTalonFX(TunerConstants.FrontLeft), new ModuleIOTalonFX(TunerConstants.FrontRight), new ModuleIOTalonFX(TunerConstants.BackLeft), new ModuleIOTalonFX(TunerConstants.BackRight), (pose) -> {});
     superstructure = new Superstructure(elevator, arm, intake, wrist, led);
-    auto = new Autonomous(this);
+    auto = new Autonomous(this, superstructure, drive);
     vision = new Vision(
       drive,
       new VisionIOPhotonVision(VisionConstants.ROBOT_TO_CAMERA_FRONT_LEFT, VisionConstants.CAMERA_FRONT_LEFT_NAME)
@@ -145,7 +145,7 @@ public class RobotContainer {
 
     drive = new Drive(new GyroIOSim(driveSimulation.getGyroSimulation()), frontLeft, frontRight, backLeft, backRight, driveSimulation::setSimulationWorldPose);
     superstructure = new Superstructure(elevator, arm, intake, wrist, led);
-    auto = new Autonomous(this);
+    auto = new Autonomous(this, superstructure, drive);
 
      vision = new Vision(
       drive,
